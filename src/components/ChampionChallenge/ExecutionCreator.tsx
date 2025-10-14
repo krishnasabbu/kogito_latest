@@ -1,21 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { useChampionChallengeStore } from '../../stores/championChallengeStore';
 import { championChallengeService } from '../../services/championChallengeService';
-import { PlayCircle, Loader2, FileCode } from 'lucide-react';
+import { testGroupService } from '../../services/testGroupService';
+import { PlayCircle, Loader2, FileCode, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ExecutionCreatorProps {
   onExecutionCreated: (executionId: string) => void;
   onCancel: () => void;
+  testGroupId?: string | null;
 }
 
 export const ExecutionCreator: React.FC<ExecutionCreatorProps> = ({
   onExecutionCreated,
   onCancel,
+  testGroupId,
 }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -23,8 +26,38 @@ export const ExecutionCreator: React.FC<ExecutionCreatorProps> = ({
   const [challengeWorkflowId, setChallengeWorkflowId] = useState('');
   const [requestPayload, setRequestPayload] = useState('{\n  "userId": "123",\n  "action": "process"\n}');
   const [isExecuting, setIsExecuting] = useState(false);
+  const [testGroupName, setTestGroupName] = useState<string | null>(null);
 
   const { addExecution, updateExecution } = useChampionChallengeStore();
+
+  useEffect(() => {
+    if (testGroupId) {
+      loadTestGroup(testGroupId);
+    }
+  }, [testGroupId]);
+
+  const loadTestGroup = async (id: string) => {
+    try {
+      const testGroup = await testGroupService.getTestGroup(id);
+      if (testGroup) {
+        setTestGroupName(testGroup.name);
+        setName(`${testGroup.name} - Test Execution`);
+        setDescription(testGroup.description || `Execution of ${testGroup.name}`);
+
+        const champion = testGroup.services.find(s => s.service_type === 'champion');
+        if (champion) {
+          setChampionWorkflowId(champion.controller_url);
+        }
+
+        const challenger = testGroup.services.find(s => s.service_type === 'challenger');
+        if (challenger) {
+          setChallengeWorkflowId(challenger.controller_url);
+        }
+      }
+    } catch (error: any) {
+      toast.error('Failed to load test group details');
+    }
+  };
 
   const validateJson = (json: string): boolean => {
     try {
@@ -97,6 +130,19 @@ export const ExecutionCreator: React.FC<ExecutionCreatorProps> = ({
             Execute both champion and challenge workflows simultaneously to compare
             performance
           </p>
+          {testGroupName && (
+            <div className="mt-3 flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-blue-900">
+                  Pre-loaded from Test Group: {testGroupName}
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Champion and challenger URLs have been automatically populated
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

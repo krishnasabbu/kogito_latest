@@ -8,21 +8,30 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Trophy, Plus, BarChart3 } from 'lucide-react';
 import { championChallengeService } from '../../services/championChallengeService';
+import { testGroupService } from '../../services/testGroupService';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 
 type View = 'list' | 'create' | 'dashboard';
 type Tab = 'individual' | 'compareAll';
 
 export const ChampionChallengeApp: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>('individual');
   const [currentView, setCurrentView] = useState<View>('list');
   const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [preloadedTestGroupId, setPreloadedTestGroupId] = useState<string | null>(null);
   const { executions, addExecution, setCurrentExecution } = useChampionChallengeStore();
 
   useEffect(() => {
     loadExecutions();
-  }, []);
+    const testGroupId = searchParams.get('testGroupId');
+    if (testGroupId) {
+      setPreloadedTestGroupId(testGroupId);
+      setCurrentView('create');
+    }
+  }, [searchParams]);
 
   const loadExecutions = async () => {
     setIsLoading(true);
@@ -199,6 +208,7 @@ export const ChampionChallengeApp: React.FC = () => {
               <ExecutionCreator
                 onExecutionCreated={handleExecutionCreated}
                 onCancel={handleBackToList}
+                testGroupId={preloadedTestGroupId}
               />
             </div>
           </div>
