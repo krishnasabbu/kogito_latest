@@ -1,37 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useChampionChallengeStore } from '../../stores/championChallengeStore';
 import { ComparisonDashboard } from './ComparisonDashboard';
-import { ExecutionCreator } from './ExecutionCreator';
 import { ExecutionList } from './ExecutionList';
 import { CompareAllAnalyticsDashboard } from './CompareAllAnalyticsDashboard';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { Trophy, Plus, BarChart3 } from 'lucide-react';
+import { Trophy, BarChart3 } from 'lucide-react';
 import { championChallengeService } from '../../services/championChallengeService';
-import { testGroupService } from '../../services/testGroupService';
 import toast from 'react-hot-toast';
-import { useSearchParams } from 'react-router-dom';
 
-type View = 'list' | 'create' | 'dashboard';
+type View = 'list' | 'dashboard';
 type Tab = 'individual' | 'compareAll';
 
 export const ChampionChallengeApp: React.FC = () => {
-  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>('individual');
   const [currentView, setCurrentView] = useState<View>('list');
   const [selectedExecutionId, setSelectedExecutionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [preloadedTestGroupId, setPreloadedTestGroupId] = useState<string | null>(null);
   const { executions, addExecution, setCurrentExecution } = useChampionChallengeStore();
 
   useEffect(() => {
     loadExecutions();
-    const testGroupId = searchParams.get('testGroupId');
-    if (testGroupId) {
-      setPreloadedTestGroupId(testGroupId);
-      setCurrentView('create');
-    }
-  }, [searchParams]);
+  }, []);
 
   const loadExecutions = async () => {
     setIsLoading(true);
@@ -44,16 +34,6 @@ export const ChampionChallengeApp: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCreateNew = () => {
-    setCurrentView('create');
-  };
-
-  const handleExecutionCreated = (executionId: string) => {
-    setSelectedExecutionId(executionId);
-    setCurrentView('dashboard');
-    loadExecutions();
   };
 
   const handleViewExecution = async (executionId: string) => {
@@ -92,27 +72,14 @@ export const ChampionChallengeApp: React.FC = () => {
               </p>
             </div>
 
-            {activeTab === 'individual' && (
-              <div className="flex items-center gap-3">
-                {currentView !== 'list' && (
-                  <Button
-                    onClick={handleBackToList}
-                    variant="outline"
-                    className="border-light-border dark:border-dark-border"
-                  >
-                    Back to List
-                  </Button>
-                )}
-                {currentView === 'list' && (
-                  <Button
-                    onClick={handleCreateNew}
-                    className="bg-gradient-to-r from-wells-red to-wells-gold hover:from-wells-red-hover hover:to-wells-gold text-white"
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    New Comparison
-                  </Button>
-                )}
-              </div>
+            {activeTab === 'individual' && currentView !== 'list' && (
+              <Button
+                onClick={handleBackToList}
+                variant="outline"
+                className="border-light-border dark:border-dark-border"
+              >
+                Back to List
+              </Button>
             )}
           </div>
         </div>
@@ -172,18 +139,11 @@ export const ChampionChallengeApp: React.FC = () => {
                 <Card className="p-12 text-center max-w-md">
                   <Trophy className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                   <h3 className="text-xl font-semibold mb-2 text-light-text-primary dark:text-dark-text-primary">
-                    No Comparisons Yet
+                    No Test Executions Yet
                   </h3>
-                  <p className="text-light-text-secondary dark:text-dark-text-secondary mb-6">
-                    Create your first champion vs challenge comparison to get started
+                  <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                    Test execution data will appear here once tests are run from your test groups
                   </p>
-                  <Button
-                    onClick={handleCreateNew}
-                    className="bg-gradient-to-r from-wells-red to-wells-gold hover:from-wells-red-hover hover:to-wells-gold text-white"
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Create Comparison
-                  </Button>
                 </Card>
               </div>
             ) : (
@@ -194,18 +154,6 @@ export const ChampionChallengeApp: React.FC = () => {
                 />
               </div>
             )}
-          </div>
-        )}
-
-        {currentView === 'create' && (
-          <div className="h-full overflow-auto p-6">
-            <div className="max-w-4xl mx-auto">
-              <ExecutionCreator
-                onExecutionCreated={handleExecutionCreated}
-                onCancel={handleBackToList}
-                testGroupId={preloadedTestGroupId}
-              />
-            </div>
           </div>
         )}
 
