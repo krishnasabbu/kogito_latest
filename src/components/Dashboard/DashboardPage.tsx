@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select } from '../ui/select';
 import { TestGroupCard } from './TestGroupCard';
+import { MockEndpointsHelper } from './MockEndpointsHelper';
 import { testGroupService } from '../../services/testGroupService';
 import { TestGroupWithStats, TestGroupStatus, ConnectionStatus } from '../../types/championChallenger';
 import toast from 'react-hot-toast';
@@ -166,6 +167,12 @@ export function DashboardPage() {
             )}
           </div>
         </div>
+
+        {testGroups.length === 0 && (
+          <div className="mb-6">
+            <MockEndpointsHelper />
+          </div>
+        )}
 
         {filteredGroups.length === 0 ? (
           <div className="text-center py-12">

@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { mockHealthService } from './mockHealthService';
 import {
   TestGroup,
   ServiceConfiguration,
@@ -157,33 +158,45 @@ export class TestGroupService {
     }
 
     try {
-      const startTime = Date.now();
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      let result: { success: boolean; responseTime: number; error?: string };
 
-      const response = await fetch(service.health_url, {
-        signal: controller.signal,
-        headers: service.header_details || {},
-      });
+      if (mockHealthService.isMockUrl(service.health_url)) {
+        result = await mockHealthService.checkHealth(service.health_url);
+      } else {
+        const startTime = Date.now();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      clearTimeout(timeoutId);
-      const responseTime = Date.now() - startTime;
+        const response = await fetch(service.health_url, {
+          signal: controller.signal,
+          headers: service.header_details || {},
+        });
 
-      const status = response.ok ? 'healthy' : 'unhealthy';
+        clearTimeout(timeoutId);
+        const responseTime = Date.now() - startTime;
+
+        result = {
+          success: response.ok,
+          responseTime,
+        };
+      }
+
+      const status = result.success ? 'healthy' : 'unhealthy';
 
       await supabase
         .from('service_configurations')
         .update({
           connection_status: status,
           last_tested: new Date().toISOString(),
-          response_time_ms: responseTime,
+          response_time_ms: result.responseTime,
         })
         .eq('id', serviceId);
 
       return {
-        success: response.ok,
+        success: result.success,
         status,
-        response_time_ms: responseTime,
+        response_time_ms: result.responseTime,
+        error: result.error,
       };
     } catch (err: any) {
       const errorMessage = err.name === 'AbortError' ? 'Connection timeout' : err.message;
