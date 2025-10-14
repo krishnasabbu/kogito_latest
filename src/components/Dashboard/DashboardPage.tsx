@@ -7,7 +7,7 @@ import { TestGroupCard } from './TestGroupCard';
 import { testGroupService } from '../../services/testGroupService';
 import { TestGroupWithStats, TestGroupStatus, ConnectionStatus } from '../../types/championChallenger';
 import toast from 'react-hot-toast';
-import { Loader2, Plus, Search, Filter } from 'lucide-react';
+import { Loader2, Plus, Search, Filter, Circle } from 'lucide-react';
 
 export function DashboardPage() {
   const navigate = useNavigate();
