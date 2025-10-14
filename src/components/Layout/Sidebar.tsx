@@ -4,7 +4,10 @@ import {
   Workflow,
   Trophy,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  LayoutDashboard,
+  Settings,
+  Activity
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -14,6 +17,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const navItems = [
+    { path: '/dashboard', label: 'Test Groups', icon: LayoutDashboard },
     { path: '/champion-challenge', label: 'Champion vs Challenge', icon: Trophy },
   ];
 

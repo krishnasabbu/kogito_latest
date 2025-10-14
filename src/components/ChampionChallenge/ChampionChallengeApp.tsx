@@ -83,18 +83,13 @@ export const ChampionChallengeApp: React.FC = () => {
       <div className="border-b border-light-border dark:border-dark-border bg-white dark:bg-dark-surface">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-wells-red to-wells-gold rounded-xl flex items-center justify-center shadow-card">
-                <Trophy className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold font-wells text-light-text-primary dark:text-dark-text-primary">
-                  Champion vs Challenge
-                </h1>
-                <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary font-wells">
-                  Compare BPMN workflow executions
-                </p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold font-wells text-light-text-primary dark:text-dark-text-primary">
+                Champion vs Challenge
+              </h1>
+              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary font-wells">
+                Compare and analyze test executions
+              </p>
             </div>
 
             {activeTab === 'individual' && (
@@ -142,7 +137,7 @@ export const ChampionChallengeApp: React.FC = () => {
               onClick={() => setActiveTab('compareAll')}
               className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === 'compareAll'
-                  ? 'border-purple-600 text-purple-600'
+                  ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary'
               }`}
             >

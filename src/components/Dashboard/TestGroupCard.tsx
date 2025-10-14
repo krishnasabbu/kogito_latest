@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { CheckCircle2, XCircle, Circle, Edit, Trash2, Activity, Loader2, Play } from 'lucide-react';
+import { CheckCircle2, XCircle, Circle, Edit, Trash2, Activity, Loader2, Trophy } from 'lucide-react';
 import { TestGroupWithStats } from '../../types/championChallenger';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -127,8 +127,8 @@ export function TestGroupCard({ testGroup, onEdit, onDelete, onViewDetails }: Te
             size="sm"
             onClick={() => navigate(`/champion-challenge?testGroupId=${testGroup.id}`)}
           >
-            <Play className="w-4 h-4 mr-2" />
-            Run Test
+            <Trophy className="w-4 h-4 mr-2" />
+            View Tests
           </Button>
           <Button variant="outline" size="sm" onClick={() => onViewDetails(testGroup.id)}>
             <Activity className="w-4 h-4 mr-2" />

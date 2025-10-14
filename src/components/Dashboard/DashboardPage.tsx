@@ -95,19 +95,19 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="p-6 bg-light-bg dark:bg-dark-bg">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Champion-Challenger Tests</h1>
-              <p className="text-gray-600">
-                Manage and monitor your A/B testing configurations
+              <h1 className="text-3xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2">Test Groups</h1>
+              <p className="text-light-text-secondary dark:text-dark-text-secondary">
+                Manage and monitor your Champion-Challenger test configurations
               </p>
             </div>
             <Button onClick={handleCreateNew}>
               <Plus className="w-4 h-4 mr-2" />
-              Create New Test
+              Create New Test Group
             </Button>
           </div>
 
