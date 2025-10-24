@@ -7,6 +7,7 @@ import { DashboardPage } from './components/Dashboard/DashboardPage';
 import { ConfigurationPage } from './components/TestConfiguration/ConfigurationPage';
 import { MonitoringDashboard } from './components/Monitoring/MonitoringDashboard';
 import { ChampionChallengeApp } from './components/ChampionChallenge/ChampionChallengeApp';
+import { LangGraphBuilder } from './components/LangGraph/LangGraphBuilder';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/configure/:testId" element={<ConfigurationPage />} />
             <Route path="/monitor/:testId" element={<MonitoringDashboard />} />
             <Route path="/champion-challenge" element={<ChampionChallengeApp />} />
+            <Route path="/langgraph-builder" element={<LangGraphBuilder />} />
           </Route>
         </Routes>
 

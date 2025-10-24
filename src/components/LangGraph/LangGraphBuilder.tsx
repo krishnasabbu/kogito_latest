@@ -1,0 +1,222 @@
+import React, { useCallback, useState } from 'react';
+import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant } from 'react-flow-renderer';
+import { useLangGraphStore } from '../../stores/langGraphStore';
+import { ServiceNode } from './ServiceNode';
+import { DecisionNode } from './DecisionNode';
+import { CustomEdge } from './CustomEdge';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { Plus, Download, Trash2, GitBranch, Code } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+const nodeTypes = {
+  serviceNode: ServiceNode,
+  decisionNode: DecisionNode,
+};
+
+const edgeTypes = {
+  custom: CustomEdge,
+};
+
+export const LangGraphBuilder: React.FC = () => {
+  const [showJSONPreview, setShowJSONPreview] = useState(false);
+  const [inputJSON, setInputJSON] = useState('{\n  "message": {}\n}');
+
+  const {
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    addServiceNode,
+    addDecisionNode,
+    clearCanvas,
+    exportJSON,
+    setInputs,
+  } = useLangGraphStore();
+
+  const handleAddServiceNode = () => {
+    const position = {
+      x: Math.random() * 400 + 100,
+      y: Math.random() * 300 + 100,
+    };
+    addServiceNode(position);
+    toast.success('Service node added');
+  };
+
+  const handleAddDecisionNode = () => {
+    const position = {
+      x: Math.random() * 400 + 100,
+      y: Math.random() * 300 + 100,
+    };
+    addDecisionNode(position);
+    toast.success('Decision node added');
+  };
+
+  const handleClearCanvas = () => {
+    if (window.confirm('Are you sure you want to clear the entire canvas?')) {
+      clearCanvas();
+      toast.success('Canvas cleared');
+    }
+  };
+
+  const handleExportJSON = () => {
+    try {
+      const parsedInput = JSON.parse(inputJSON);
+      setInputs(parsedInput);
+    } catch (error) {
+      toast.error('Invalid input JSON format');
+      return;
+    }
+
+    const json = exportJSON();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `langgraph-${Date.now()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success('Graph exported successfully');
+  };
+
+  const handleTogglePreview = () => {
+    try {
+      const parsedInput = JSON.parse(inputJSON);
+      setInputs(parsedInput);
+      setShowJSONPreview(!showJSONPreview);
+    } catch (error) {
+      toast.error('Invalid input JSON format');
+    }
+  };
+
+  return (
+    <div className="h-full flex bg-light-bg dark:bg-dark-bg">
+      <div className="w-80 border-r border-light-border dark:border-dark-border bg-white dark:bg-dark-surface overflow-y-auto">
+        <div className="p-6 space-y-6">
+          <div>
+            <h2 className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2">
+              LangGraph Builder
+            </h2>
+            <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+              Drag and drop nodes to build your workflow
+            </p>
+          </div>
+
+          <Card className="p-4 space-y-3">
+            <h3 className="font-semibold text-sm text-gray-900">Add Nodes</h3>
+            <Button
+              onClick={handleAddServiceNode}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Service Node
+            </Button>
+            <Button
+              onClick={handleAddDecisionNode}
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+            >
+              <GitBranch className="w-4 h-4 mr-2" />
+              Add Decision Node
+            </Button>
+          </Card>
+
+          <Card className="p-4 space-y-3">
+            <h3 className="font-semibold text-sm text-gray-900">Input Configuration</h3>
+            <p className="text-xs text-gray-600">
+              Define the initial inputs for your workflow
+            </p>
+            <textarea
+              value={inputJSON}
+              onChange={(e) => setInputJSON(e.target.value)}
+              className="w-full h-32 px-3 py-2 text-xs font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              placeholder='{\n  "message": {}\n}'
+            />
+          </Card>
+
+          <Card className="p-4 space-y-3">
+            <h3 className="font-semibold text-sm text-gray-900">Actions</h3>
+            <Button
+              onClick={handleTogglePreview}
+              variant="outline"
+              className="w-full"
+            >
+              <Code className="w-4 h-4 mr-2" />
+              {showJSONPreview ? 'Hide' : 'Show'} JSON Preview
+            </Button>
+            <Button
+              onClick={handleExportJSON}
+              variant="outline"
+              className="w-full"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export JSON
+            </Button>
+            <Button
+              onClick={handleClearCanvas}
+              variant="outline"
+              className="w-full text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear Canvas
+            </Button>
+          </Card>
+
+          <Card className="p-4 bg-blue-50 border-blue-200">
+            <h4 className="font-semibold text-sm text-blue-900 mb-2">Tips</h4>
+            <ul className="text-xs text-blue-800 space-y-1">
+              <li>• Double-click node titles to rename</li>
+              <li>• Click edge labels to add conditions</li>
+              <li>• Drag nodes to connect them</li>
+              <li>• Click expand/collapse to show/hide details</li>
+            </ul>
+          </Card>
+        </div>
+      </div>
+
+      <div className="flex-1 relative">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          fitView
+          className="bg-gray-50"
+        >
+          <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
+          <Controls />
+          <MiniMap
+            nodeColor={(node) => {
+              if (node.type === 'serviceNode') return '#3b82f6';
+              if (node.type === 'decisionNode') return '#a855f7';
+              return '#64748b';
+            }}
+            className="bg-white border border-gray-300"
+          />
+        </ReactFlow>
+
+        {showJSONPreview && (
+          <div className="absolute bottom-4 right-4 w-96 max-h-96 overflow-auto bg-white border-2 border-gray-300 rounded-lg shadow-xl">
+            <div className="sticky top-0 bg-gray-100 px-4 py-2 border-b border-gray-300 flex items-center justify-between">
+              <h3 className="font-semibold text-sm text-gray-900">JSON Preview</h3>
+              <button
+                onClick={() => setShowJSONPreview(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <pre className="p-4 text-xs font-mono text-gray-800 whitespace-pre-wrap">
+              {exportJSON()}
+            </pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

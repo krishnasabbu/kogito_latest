@@ -6,8 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
-  Settings,
-  Activity
+  GitBranch
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,6 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const navItems = [
     { path: '/dashboard', label: 'Test Groups', icon: LayoutDashboard },
     { path: '/champion-challenge', label: 'Champion vs Challenge', icon: Trophy },
+    { path: '/langgraph-builder', label: 'LangGraph Builder', icon: GitBranch },
   ];
 
   return (
