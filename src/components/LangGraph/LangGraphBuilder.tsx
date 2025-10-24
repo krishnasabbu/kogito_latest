@@ -207,6 +207,10 @@ export const LangGraphBuilder: React.FC = () => {
           onEdgeClick={handleEdgeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          defaultEdgeOptions={{
+            type: 'custom',
+            animated: false,
+          }}
           fitView
           className="bg-gradient-to-br from-gray-50 to-blue-50"
         >

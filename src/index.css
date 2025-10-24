@@ -186,8 +186,12 @@ body {
 
 /* React Flow custom styles */
 .react-flow__edge-path {
-  stroke: #64748b;
-  stroke-width: 2.5;
+  stroke: #64748b !important;
+  stroke-width: 3 !important;
+}
+
+.react-flow__edge {
+  pointer-events: all !important;
 }
 
 .react-flow__node {
