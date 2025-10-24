@@ -23,8 +23,9 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
   };
 
   return (
-    <div className="bg-white border-2 border-blue-500 rounded-xl shadow-2xl min-w-[300px] hover:shadow-blue-200 transition-all">
-      <Handle type="target" position={Position.Top} className="w-4 h-4 bg-blue-500 border-2 border-white shadow-md" />
+    <div className="bg-white border-4 border-blue-600 rounded-xl shadow-2xl min-w-[300px] hover:shadow-blue-300 hover:border-blue-700 transition-all">
+      <Handle type="target" position={Position.Top} className="w-5 h-5 bg-blue-600 border-3 border-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all" />
+      <Handle type="source" position={Position.Right} className="w-5 h-5 bg-blue-600 border-3 border-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all" />
 
       <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white px-4 py-3 rounded-t-xl flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2 flex-1">
@@ -109,7 +110,7 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-blue-500 border-2 border-white shadow-md" />
+      <Handle type="source" position={Position.Bottom} className="w-5 h-5 bg-blue-600 border-3 border-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all" />
     </div>
   );
 };

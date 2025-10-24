@@ -70,12 +70,8 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
       ...connection,
       id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
       data: { condition: '' },
-      type: 'smoothstep',
+      type: 'custom',
       animated: false,
-      style: {
-        stroke: '#64748b',
-        strokeWidth: 3,
-      },
     };
     set({
       edges: addEdge(newEdge, get().edges) as LangGraphEdge[],

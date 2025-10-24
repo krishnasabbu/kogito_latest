@@ -1,8 +1,9 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, ConnectionLineType } from 'react-flow-renderer';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { ServiceNode } from './ServiceNode';
 import { DecisionNode } from './DecisionNode';
+import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Plus, Download, Trash2, GitBranch, Code } from 'lucide-react';
@@ -11,6 +12,10 @@ import toast from 'react-hot-toast';
 const nodeTypes = {
   serviceNode: ServiceNode,
   decisionNode: DecisionNode,
+};
+
+const edgeTypes = {
+  custom: CustomEdge,
 };
 
 export const LangGraphBuilder: React.FC = () => {
@@ -97,21 +102,22 @@ export const LangGraphBuilder: React.FC = () => {
     setEdgeCondition(edge.data?.condition || '');
   }, []);
 
-  const edgesWithLabels = edges.map(edge => ({
-    ...edge,
-    label: edge.data?.condition || '',
-    labelStyle: edge.data?.condition ? {
-      fill: '#3b82f6',
-      fontSize: 12,
-      fontWeight: 600,
-    } : undefined,
-  }));
 
   const handleSaveCondition = () => {
     if (selectedEdge) {
       updateEdgeCondition(selectedEdge, edgeCondition);
       toast.success('Condition updated');
       setSelectedEdge(null);
+    }
+  };
+
+  const handleDeleteEdge = () => {
+    if (selectedEdge && window.confirm('Delete this edge?')) {
+      const updatedEdges = edges.filter(e => e.id !== selectedEdge);
+      setEdges(updatedEdges);
+      setSelectedEdge(null);
+      setEdgeCondition('');
+      toast.success('Edge deleted');
     }
   };
 
@@ -207,12 +213,13 @@ export const LangGraphBuilder: React.FC = () => {
       <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
-          edges={edgesWithLabels}
+          edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgeClick={handleEdgeClick}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           connectionLineType={ConnectionLineType.SmoothStep}
           nodesDraggable={true}
           nodesConnectable={true}
@@ -274,7 +281,15 @@ export const LangGraphBuilder: React.FC = () => {
                   className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all"
                   style={{ pointerEvents: 'all' }}
                 >
-                  Save Condition
+                  Save
+                </button>
+                <button
+                  onClick={handleDeleteEdge}
+                  type="button"
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-all"
+                  style={{ pointerEvents: 'all' }}
+                >
+                  Delete
                 </button>
                 <button
                   onClick={handleClosePanel}

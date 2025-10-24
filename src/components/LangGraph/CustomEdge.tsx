@@ -1,20 +1,19 @@
 import React from 'react';
 import { EdgeProps, getBezierPath } from 'react-flow-renderer';
+import { Settings } from 'lucide-react';
 
-export const CustomEdge: React.FC<EdgeProps> = (props) => {
-  const {
-    id,
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    sourcePosition,
-    targetPosition,
-    data,
-    arrowHeadType,
-    markerEndId,
-  } = props;
-
+export const CustomEdge: React.FC<EdgeProps> = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  data,
+  style = {},
+  markerEnd,
+}) => {
   const edgePath = getBezierPath({
     sourceX,
     sourceY,
@@ -32,34 +31,43 @@ export const CustomEdge: React.FC<EdgeProps> = (props) => {
     <>
       <path
         id={id}
-        style={{ stroke: '#64748b', strokeWidth: 3 }}
         className="react-flow__edge-path"
         d={path}
-        markerEnd={markerEndId ? `url(#${markerEndId})` : undefined}
+        markerEnd={markerEnd}
+        style={{
+          stroke: '#3b82f6',
+          strokeWidth: 3,
+          ...style,
+        }}
       />
 
-      <circle
-        cx={labelX}
-        cy={labelY}
-        r={10}
-        fill="white"
-        stroke="#3b82f6"
-        strokeWidth={3}
-        style={{ cursor: 'pointer' }}
-      />
+      <foreignObject
+        width={40}
+        height={40}
+        x={labelX - 20}
+        y={labelY - 20}
+        style={{ overflow: 'visible' }}
+      >
+        <div
+          className="flex items-center justify-center w-10 h-10 bg-white border-3 border-blue-500 rounded-full shadow-lg cursor-pointer hover:bg-blue-50 hover:border-blue-600 hover:scale-110 transition-all"
+          style={{ pointerEvents: 'all' }}
+        >
+          <Settings className="w-5 h-5 text-blue-600" />
+        </div>
+      </foreignObject>
 
       {data?.condition && (
-        <text
-          x={labelX + 15}
-          y={labelY + 5}
-          style={{
-            fontSize: '12px',
-            fill: '#3b82f6',
-            fontWeight: '600',
-          }}
+        <foreignObject
+          width={200}
+          height={30}
+          x={labelX + 25}
+          y={labelY - 15}
+          style={{ pointerEvents: 'none' }}
         >
-          {data.condition}
-        </text>
+          <div className="bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+            {data.condition}
+          </div>
+        </foreignObject>
       )}
     </>
   );

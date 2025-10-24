@@ -21,8 +21,9 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
   };
 
   return (
-    <div className="bg-white border-2 border-purple-500 rounded-xl shadow-2xl min-w-[300px] hover:shadow-purple-200 transition-all">
-      <Handle type="target" position={Position.Top} className="w-4 h-4 bg-purple-500 border-2 border-white shadow-md" />
+    <div className="bg-white border-4 border-purple-600 rounded-xl shadow-2xl min-w-[300px] hover:shadow-purple-300 hover:border-purple-700 transition-all">
+      <Handle type="target" position={Position.Top} className="w-5 h-5 bg-purple-600 border-3 border-white shadow-lg hover:bg-purple-700 hover:scale-110 transition-all" />
+      <Handle type="source" position={Position.Right} className="w-5 h-5 bg-purple-600 border-3 border-white shadow-lg hover:bg-purple-700 hover:scale-110 transition-all" />
 
       <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-600 text-white px-4 py-3 rounded-t-xl flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2 flex-1">
@@ -87,7 +88,7 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-purple-500 border-2 border-white shadow-md" />
+      <Handle type="source" position={Position.Bottom} className="w-5 h-5 bg-purple-600 border-3 border-white shadow-lg hover:bg-purple-700 hover:scale-110 transition-all" />
     </div>
   );
 };

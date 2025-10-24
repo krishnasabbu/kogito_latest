@@ -186,7 +186,7 @@ body {
 
 /* React Flow custom styles */
 .react-flow__edge-path {
-  stroke: #64748b !important;
+  stroke: #3b82f6 !important;
   stroke-width: 3 !important;
 }
 
@@ -196,6 +196,13 @@ body {
 
 .react-flow__node {
   pointer-events: all;
+}
+
+/* Handle styles */
+.react-flow__handle {
+  width: 16px !important;
+  height: 16px !important;
+  border-width: 3px !important;
 }
 
 /* Ensure properties panel is interactive */
