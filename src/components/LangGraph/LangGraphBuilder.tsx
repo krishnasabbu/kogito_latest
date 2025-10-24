@@ -39,6 +39,20 @@ export const LangGraphBuilder: React.FC = () => {
     setEdges,
   } = useLangGraphStore();
 
+  const handleEdgeButtonClick = useCallback((edge: any) => {
+    setSelectedEdge(edge.id);
+    const foundEdge = edges.find(e => e.id === edge.id);
+    setEdgeCondition(foundEdge?.data?.condition || '');
+  }, [edges]);
+
+  const edgesWithHandler = edges.map(edge => ({
+    ...edge,
+    data: {
+      ...edge.data,
+      onEdgeClick: handleEdgeButtonClick,
+    },
+  }));
+
   const handleAddServiceNode = () => {
     const position = {
       x: Math.random() * 400 + 100,
@@ -213,7 +227,7 @@ export const LangGraphBuilder: React.FC = () => {
       <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
-          edges={edges}
+          edges={edgesWithHandler}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}

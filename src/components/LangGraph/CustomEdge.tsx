@@ -11,8 +11,8 @@ export const CustomEdge: React.FC<EdgeProps> = ({
   sourcePosition,
   targetPosition,
   data,
-  arrowHeadType,
-  markerEndId,
+  style = {},
+  markerEnd,
 }) => {
   const edgePath = getSmoothStepPath({
     sourceX,
@@ -27,15 +27,23 @@ export const CustomEdge: React.FC<EdgeProps> = ({
   const labelX = (sourceX + targetX) / 2;
   const labelY = (sourceY + targetY) / 2;
 
+  const handleButtonClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (data?.onEdgeClick) {
+      data.onEdgeClick({ id });
+    }
+  };
+
   return (
-    <g>
+    <g className="react-flow__edge">
       <path
         id={id}
+        className="react-flow__edge-path"
         d={path}
         fill="none"
-        stroke="#3b82f6"
-        strokeWidth={4}
-        markerEnd={markerEndId ? `url(#${markerEndId})` : undefined}
+        stroke={style.stroke || '#3b82f6'}
+        strokeWidth={style.strokeWidth || 4}
+        markerEnd={markerEnd}
       />
 
       <circle
@@ -46,6 +54,7 @@ export const CustomEdge: React.FC<EdgeProps> = ({
         stroke="#3b82f6"
         strokeWidth={3}
         style={{ cursor: 'pointer' }}
+        onClick={handleButtonClick}
       />
 
       <foreignObject
