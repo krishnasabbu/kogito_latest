@@ -21,10 +21,10 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
   };
 
   return (
-    <div className="bg-white border-2 border-purple-500 rounded-lg shadow-lg min-w-[280px]">
-      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-purple-500" />
+    <div className="bg-white border-2 border-purple-500 rounded-xl shadow-2xl min-w-[300px] hover:shadow-purple-200 transition-all">
+      <Handle type="target" position={Position.Top} className="w-4 h-4 bg-purple-500 border-2 border-white shadow-md" />
 
-      <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-t-md flex items-center justify-between">
+      <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-600 text-white px-4 py-3 rounded-t-xl flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2 flex-1">
           <GitBranch className="w-4 h-4" />
           {isEditingLabel ? (
@@ -64,29 +64,30 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
       </div>
 
       {isExpanded && (
-        <div className="p-4 space-y-3">
-          <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide">
-            Decision Node
+        <div className="p-5 space-y-4 bg-gradient-to-br from-white to-purple-50">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-4 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full"></div>
+            <div className="text-xs font-bold text-purple-700 uppercase tracking-wider">Decision Node</div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-gray-700 mb-2">
               Decision Script
             </label>
             <textarea
               value={data.script}
               onChange={(e) => updateNodeData(id, { script: e.target.value })}
               placeholder="state['field'] == 'value'"
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono resize-none h-32 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg font-mono resize-none h-32 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50 transition-all"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 mt-2">
               Write a condition to evaluate the workflow state
             </p>
           </div>
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-purple-500" />
+      <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-purple-500 border-2 border-white shadow-md" />
     </div>
   );
 };

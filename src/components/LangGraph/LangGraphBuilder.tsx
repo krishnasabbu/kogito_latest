@@ -21,6 +21,8 @@ const edgeTypes = {
 export const LangGraphBuilder: React.FC = () => {
   const [showJSONPreview, setShowJSONPreview] = useState(false);
   const [inputJSON, setInputJSON] = useState('{\n  "message": {}\n}');
+  const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
+  const [edgeCondition, setEdgeCondition] = useState('');
 
   const {
     nodes,
@@ -33,6 +35,7 @@ export const LangGraphBuilder: React.FC = () => {
     clearCanvas,
     exportJSON,
     setInputs,
+    updateEdgeCondition,
   } = useLangGraphStore();
 
   const handleAddServiceNode = () => {
@@ -90,6 +93,24 @@ export const LangGraphBuilder: React.FC = () => {
     } catch (error) {
       toast.error('Invalid input JSON format');
     }
+  };
+
+  const handleEdgeClick = useCallback((event: React.MouseEvent, edge: any) => {
+    setSelectedEdge(edge.id);
+    setEdgeCondition(edge.data?.condition || '');
+  }, []);
+
+  const handleSaveCondition = () => {
+    if (selectedEdge) {
+      updateEdgeCondition(selectedEdge, edgeCondition);
+      toast.success('Condition updated');
+      setSelectedEdge(null);
+    }
+  };
+
+  const handleClosePanel = () => {
+    setSelectedEdge(null);
+    setEdgeCondition('');
   };
 
   return (
@@ -164,12 +185,12 @@ export const LangGraphBuilder: React.FC = () => {
             </Button>
           </Card>
 
-          <Card className="p-4 bg-blue-50 border-blue-200">
+          <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
             <h4 className="font-semibold text-sm text-blue-900 mb-2">Tips</h4>
             <ul className="text-xs text-blue-800 space-y-1">
               <li>• Double-click node titles to rename</li>
-              <li>• Click edge labels to add conditions</li>
-              <li>• Drag nodes to connect them</li>
+              <li>• Click the dot on edge to add conditions</li>
+              <li>• Drag from node handles to connect</li>
               <li>• Click expand/collapse to show/hide details</li>
             </ul>
           </Card>
@@ -183,22 +204,68 @@ export const LangGraphBuilder: React.FC = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onEdgeClick={handleEdgeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
-          className="bg-gray-50"
+          className="bg-gradient-to-br from-gray-50 to-blue-50"
         >
           <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
-          <Controls />
+          <Controls className="bg-white shadow-lg rounded-lg border border-gray-200" />
           <MiniMap
             nodeColor={(node) => {
               if (node.type === 'serviceNode') return '#3b82f6';
               if (node.type === 'decisionNode') return '#a855f7';
               return '#64748b';
             }}
-            className="bg-white border border-gray-300"
+            className="bg-white border-2 border-gray-300 rounded-lg shadow-lg"
           />
         </ReactFlow>
+
+        {selectedEdge && (
+          <div className="absolute right-4 top-4 w-96 bg-white border-2 border-blue-500 rounded-xl shadow-2xl">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
+              <h3 className="font-semibold text-lg">Edge Condition</h3>
+              <button
+                onClick={handleClosePanel}
+                className="text-white hover:bg-blue-700 rounded-full p-1 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Condition Expression
+                </label>
+                <textarea
+                  value={edgeCondition}
+                  onChange={(e) => setEdgeCondition(e.target.value)}
+                  placeholder="e.g., state['field'] == 'value'"
+                  className="w-full h-32 px-4 py-3 text-sm border-2 border-gray-300 rounded-lg font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Enter a condition that evaluates to true or false
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleSaveCondition}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                >
+                  Save Condition
+                </Button>
+                <Button
+                  onClick={handleClosePanel}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showJSONPreview && (
           <div className="absolute bottom-4 right-4 w-96 max-h-96 overflow-auto bg-white border-2 border-gray-300 rounded-lg shadow-xl">

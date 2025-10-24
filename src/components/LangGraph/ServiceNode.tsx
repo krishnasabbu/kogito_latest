@@ -23,10 +23,10 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
   };
 
   return (
-    <div className="bg-white border-2 border-blue-500 rounded-lg shadow-lg min-w-[280px]">
-      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-blue-500" />
+    <div className="bg-white border-2 border-blue-500 rounded-xl shadow-2xl min-w-[300px] hover:shadow-blue-200 transition-all">
+      <Handle type="target" position={Position.Top} className="w-4 h-4 bg-blue-500 border-2 border-white shadow-md" />
 
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-t-md flex items-center justify-between">
+      <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white px-4 py-3 rounded-t-xl flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2 flex-1">
           <Globe className="w-4 h-4" />
           {isEditingLabel ? (
@@ -66,28 +66,29 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
       </div>
 
       {isExpanded && (
-        <div className="p-4 space-y-3">
-          <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
-            Service Node
+        <div className="p-5 space-y-4 bg-gradient-to-br from-white to-blue-50">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-4 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+            <div className="text-xs font-bold text-blue-700 uppercase tracking-wider">Service Node</div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">URL</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-2">URL</label>
             <input
               type="text"
               value={data.url}
               onChange={(e) => updateNodeData(id, { url: e.target.value })}
               placeholder="https://api.example.com/endpoint"
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Method</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-2">Method</label>
             <select
               value={data.method}
               onChange={(e) => updateNodeData(id, { method: e.target.value as any })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-semibold transition-all"
             >
               <option value="GET">GET</option>
               <option value="POST">POST</option>
@@ -97,18 +98,18 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Request Body</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-2">Request Body</label>
             <textarea
               value={data.request}
               onChange={(e) => updateNodeData(id, { request: e.target.value })}
               placeholder='{"key": "value"}'
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md font-mono resize-none h-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg font-mono resize-none h-24 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 transition-all"
             />
           </div>
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-blue-500" />
+      <Handle type="source" position={Position.Bottom} className="w-4 h-4 bg-blue-500 border-2 border-white shadow-md" />
     </div>
   );
 };
