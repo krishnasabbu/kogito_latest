@@ -220,7 +220,13 @@ export const LangGraphBuilder: React.FC = () => {
           onEdgeClick={handleEdgeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          defaultEdgeOptions={{
+            type: 'custom',
+            animated: true,
+            style: { stroke: '#3b82f6', strokeWidth: 4 },
+          }}
           connectionLineType={ConnectionLineType.SmoothStep}
+          connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 4 }}
           nodesDraggable={true}
           nodesConnectable={true}
           elementsSelectable={true}
