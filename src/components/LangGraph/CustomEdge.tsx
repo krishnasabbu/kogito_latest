@@ -28,31 +28,15 @@ export const CustomEdge: React.FC<EdgeProps> = ({
 
   return (
     <>
-      <defs>
-        <linearGradient id={`gradient-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.3" />
-        </linearGradient>
-      </defs>
-
       <path
         id={id}
         className="react-flow__edge-path"
         d={path}
-        strokeWidth={3}
-        stroke={`url(#gradient-${id})`}
-        fill="none"
-        markerEnd={markerEnd}
-        style={style}
-      />
-
-      <path
-        d={path}
-        strokeWidth={3}
+        strokeWidth={2.5}
         stroke="#64748b"
         fill="none"
-        strokeOpacity={0.6}
-        style={{ pointerEvents: 'none' }}
+        markerEnd={markerEnd}
+        style={{ ...style, strokeOpacity: 0.8 }}
       />
 
       <circle
@@ -63,7 +47,6 @@ export const CustomEdge: React.FC<EdgeProps> = ({
         stroke="#3b82f6"
         strokeWidth={2.5}
         className="cursor-pointer hover:fill-blue-50 hover:stroke-blue-600 transition-all"
-        style={{ pointerEvents: 'all' }}
       />
 
       {data?.condition && (

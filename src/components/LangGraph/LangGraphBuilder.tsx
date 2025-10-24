@@ -223,12 +223,16 @@ export const LangGraphBuilder: React.FC = () => {
         </ReactFlow>
 
         {selectedEdge && (
-          <div className="absolute right-4 top-4 w-96 bg-white border-2 border-blue-500 rounded-xl shadow-2xl">
+          <div
+            className="properties-panel absolute right-4 top-4 w-96 bg-white border-2 border-blue-500 rounded-xl shadow-2xl"
+            style={{ zIndex: 1000, pointerEvents: 'all' }}
+          >
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 rounded-t-xl flex items-center justify-between">
               <h3 className="font-semibold text-lg">Edge Condition</h3>
               <button
                 onClick={handleClosePanel}
-                className="text-white hover:bg-blue-700 rounded-full p-1 transition-colors"
+                className="text-white hover:bg-blue-700 rounded-full p-1.5 transition-colors"
+                type="button"
               >
                 ✕
               </button>
@@ -242,26 +246,31 @@ export const LangGraphBuilder: React.FC = () => {
                   value={edgeCondition}
                   onChange={(e) => setEdgeCondition(e.target.value)}
                   placeholder="e.g., state['field'] == 'value'"
-                  className="w-full h-32 px-4 py-3 text-sm border-2 border-gray-300 rounded-lg font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full h-32 px-4 py-3 text-sm border-2 border-gray-300 rounded-lg font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                  style={{ pointerEvents: 'all', userSelect: 'text' }}
+                  autoFocus
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Enter a condition that evaluates to true or false
                 </p>
               </div>
               <div className="flex gap-3">
-                <Button
+                <button
                   onClick={handleSaveCondition}
-                  className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+                  type="button"
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all"
+                  style={{ pointerEvents: 'all' }}
                 >
                   Save Condition
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={handleClosePanel}
-                  variant="outline"
-                  className="flex-1"
+                  type="button"
+                  className="flex-1 border-2 border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium transition-all"
+                  style={{ pointerEvents: 'all' }}
                 >
                   Cancel
-                </Button>
+                </button>
               </div>
             </div>
           </div>

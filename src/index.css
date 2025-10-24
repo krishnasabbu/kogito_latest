@@ -183,3 +183,24 @@ body {
     --tw-shadow-colored: 0 10px 25px -5px var(--tw-shadow-color), 0 4px 6px -2px var(--tw-shadow-color);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
+
+/* React Flow custom styles */
+.react-flow__edge-path {
+  stroke: #64748b;
+  stroke-width: 2.5;
+}
+
+.react-flow__node {
+  pointer-events: all;
+}
+
+/* Ensure properties panel is interactive */
+.properties-panel {
+  pointer-events: all !important;
+  user-select: text !important;
+}
+
+.properties-panel * {
+  pointer-events: all !important;
+  user-select: text !important;
+}
