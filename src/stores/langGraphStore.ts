@@ -13,7 +13,15 @@ export interface DecisionNodeData {
   label: string;
 }
 
-export type NodeData = ServiceNodeData | DecisionNodeData;
+export interface StartNodeData {
+  label: string;
+}
+
+export interface EndNodeData {
+  label: string;
+}
+
+export type NodeData = ServiceNodeData | DecisionNodeData | StartNodeData | EndNodeData;
 
 export interface LangGraphEdge extends Edge {
   data?: {
@@ -34,6 +42,8 @@ interface LangGraphState {
 
   addServiceNode: (position: { x: number; y: number }) => void;
   addDecisionNode: (position: { x: number; y: number }) => void;
+  addStartNode: (position: { x: number; y: number }) => void;
+  addEndNode: (position: { x: number; y: number }) => void;
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void;
   deleteNode: (nodeId: string) => void;
   updateEdgeCondition: (edgeId: string, condition: string) => void;
@@ -128,6 +138,32 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
     });
   },
 
+  addStartNode: (position) => {
+    const id = `start-${nodeIdCounter++}`;
+    const newNode: Node<StartNodeData> = {
+      id,
+      type: 'startNode',
+      position,
+      data: {
+        label: 'Start',
+      },
+    };
+    set({ nodes: [...get().nodes, newNode] });
+  },
+
+  addEndNode: (position) => {
+    const id = `end-${nodeIdCounter++}`;
+    const newNode: Node<EndNodeData> = {
+      id,
+      type: 'endNode',
+      position,
+      data: {
+        label: 'End',
+      },
+    };
+    set({ nodes: [...get().nodes, newNode] });
+  },
+
   updateEdgeCondition: (edgeId, condition) => {
     set({
       edges: get().edges.map((edge) =>
@@ -149,11 +185,19 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
     const state = get();
     const exportData = {
       graph: {
-        nodes: state.nodes.map((node) => ({
-          id: node.id,
-          type: node.type === 'serviceNode' ? 'service' : 'decision',
-          data: node.data,
-        })),
+        nodes: state.nodes.map((node) => {
+          let type = 'service';
+          if (node.type === 'serviceNode') type = 'service';
+          else if (node.type === 'decisionNode') type = 'decision';
+          else if (node.type === 'startNode') type = 'start';
+          else if (node.type === 'endNode') type = 'end';
+
+          return {
+            id: node.id,
+            type,
+            data: node.data,
+          };
+        }),
         edges: state.edges.map((edge) => ({
           source: edge.source,
           target: edge.target,

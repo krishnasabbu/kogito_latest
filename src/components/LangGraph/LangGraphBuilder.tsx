@@ -3,15 +3,19 @@ import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, Connection
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { ServiceNode } from './ServiceNode';
 import { DecisionNode } from './DecisionNode';
+import { StartNode } from './StartNode';
+import { EndNode } from './EndNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Plus, Download, Trash2, GitBranch, Code } from 'lucide-react';
+import { Plus, Download, Trash2, GitBranch, Code, Play, Square } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const nodeTypes = {
   serviceNode: ServiceNode,
   decisionNode: DecisionNode,
+  startNode: StartNode,
+  endNode: EndNode,
 };
 
 const edgeTypes = {
@@ -32,6 +36,8 @@ export const LangGraphBuilder: React.FC = () => {
     onConnect,
     addServiceNode,
     addDecisionNode,
+    addStartNode,
+    addEndNode,
     clearCanvas,
     exportJSON,
     setInputs,
@@ -69,6 +75,24 @@ export const LangGraphBuilder: React.FC = () => {
     };
     addDecisionNode(position);
     toast.success('Decision node added');
+  };
+
+  const handleAddStartNode = () => {
+    const position = {
+      x: Math.random() * 400 + 100,
+      y: Math.random() * 300 + 100,
+    };
+    addStartNode(position);
+    toast.success('Start node added');
+  };
+
+  const handleAddEndNode = () => {
+    const position = {
+      x: Math.random() * 400 + 100,
+      y: Math.random() * 300 + 100,
+    };
+    addEndNode(position);
+    toast.success('End node added');
   };
 
   const handleClearCanvas = () => {
@@ -156,6 +180,13 @@ export const LangGraphBuilder: React.FC = () => {
           <Card className="p-4 space-y-3">
             <h3 className="font-semibold text-sm text-gray-900">Add Nodes</h3>
             <Button
+              onClick={handleAddStartNode}
+              className="w-full bg-green-500 hover:bg-green-600 text-white"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Add Start Node
+            </Button>
+            <Button
               onClick={handleAddServiceNode}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white"
             >
@@ -164,10 +195,17 @@ export const LangGraphBuilder: React.FC = () => {
             </Button>
             <Button
               onClick={handleAddDecisionNode}
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white"
             >
               <GitBranch className="w-4 h-4 mr-2" />
               Add Decision Node
+            </Button>
+            <Button
+              onClick={handleAddEndNode}
+              className="w-full bg-red-500 hover:bg-red-600 text-white"
+            >
+              <Square className="w-4 h-4 mr-2" />
+              Add End Node
             </Button>
           </Card>
 
@@ -254,8 +292,10 @@ export const LangGraphBuilder: React.FC = () => {
           <Controls className="bg-white shadow-lg rounded-lg border border-gray-200" />
           <MiniMap
             nodeColor={(node) => {
+              if (node.type === 'startNode') return '#22c55e';
               if (node.type === 'serviceNode') return '#3b82f6';
-              if (node.type === 'decisionNode') return '#a855f7';
+              if (node.type === 'decisionNode') return '#f59e0b';
+              if (node.type === 'endNode') return '#ef4444';
               return '#64748b';
             }}
             className="bg-white border-2 border-gray-300 rounded-lg shadow-lg"
