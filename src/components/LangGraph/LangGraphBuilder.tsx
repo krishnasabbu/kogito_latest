@@ -1,9 +1,8 @@
-import React, { useCallback, useState } from 'react';
-import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant } from 'react-flow-renderer';
+import React, { useCallback, useState, useEffect } from 'react';
+import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, ConnectionLineType } from 'react-flow-renderer';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { ServiceNode } from './ServiceNode';
 import { DecisionNode } from './DecisionNode';
-import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Plus, Download, Trash2, GitBranch, Code } from 'lucide-react';
@@ -12,10 +11,6 @@ import toast from 'react-hot-toast';
 const nodeTypes = {
   serviceNode: ServiceNode,
   decisionNode: DecisionNode,
-};
-
-const edgeTypes = {
-  custom: CustomEdge,
 };
 
 export const LangGraphBuilder: React.FC = () => {
@@ -36,6 +31,7 @@ export const LangGraphBuilder: React.FC = () => {
     exportJSON,
     setInputs,
     updateEdgeCondition,
+    setEdges,
   } = useLangGraphStore();
 
   const handleAddServiceNode = () => {
@@ -96,9 +92,20 @@ export const LangGraphBuilder: React.FC = () => {
   };
 
   const handleEdgeClick = useCallback((event: React.MouseEvent, edge: any) => {
+    event.stopPropagation();
     setSelectedEdge(edge.id);
     setEdgeCondition(edge.data?.condition || '');
   }, []);
+
+  const edgesWithLabels = edges.map(edge => ({
+    ...edge,
+    label: edge.data?.condition || '',
+    labelStyle: edge.data?.condition ? {
+      fill: '#3b82f6',
+      fontSize: 12,
+      fontWeight: 600,
+    } : undefined,
+  }));
 
   const handleSaveCondition = () => {
     if (selectedEdge) {
@@ -200,18 +207,20 @@ export const LangGraphBuilder: React.FC = () => {
       <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
-          edges={edges}
+          edges={edgesWithLabels}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onEdgeClick={handleEdgeClick}
           nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          defaultEdgeOptions={{
-            type: 'custom',
-            animated: false,
-          }}
+          connectionLineType={ConnectionLineType.SmoothStep}
+          nodesDraggable={true}
+          nodesConnectable={true}
+          elementsSelectable={true}
           fitView
+          fitViewOptions={{
+            padding: 0.2,
+          }}
           className="bg-gradient-to-br from-gray-50 to-blue-50"
         >
           <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
