@@ -5,6 +5,10 @@ class TestGroupService {
     return [];
   }
 
+  async getTestGroups(): Promise<TestGroupWithStats[]> {
+    return [];
+  }
+
   async getTestGroup(id: string): Promise<TestGroupWithStats | null> {
     return null;
   }
