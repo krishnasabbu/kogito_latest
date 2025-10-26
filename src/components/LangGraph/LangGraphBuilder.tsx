@@ -326,17 +326,24 @@ export const LangGraphBuilder: React.FC = () => {
         )}
 
         {showJSONPreview && (
-          <div className="absolute bottom-4 right-4 w-96 max-h-96 overflow-auto bg-white border-2 border-gray-300 rounded-lg shadow-xl">
+          <div
+            className="absolute bottom-4 right-4 w-96 max-h-96 overflow-auto bg-white border-2 border-gray-300 rounded-lg shadow-xl"
+            style={{ zIndex: 1001, pointerEvents: 'all' }}
+          >
             <div className="sticky top-0 bg-gray-100 px-4 py-2 border-b border-gray-300 flex items-center justify-between">
               <h3 className="font-semibold text-sm text-gray-900">JSON Preview</h3>
               <button
                 onClick={() => setShowJSONPreview(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 p-1"
+                style={{ pointerEvents: 'all' }}
               >
                 ✕
               </button>
             </div>
-            <pre className="p-4 text-xs font-mono text-gray-800 whitespace-pre-wrap">
+            <pre
+              className="p-4 text-xs font-mono text-gray-800 whitespace-pre-wrap"
+              style={{ pointerEvents: 'all', userSelect: 'text' }}
+            >
               {exportJSON()}
             </pre>
           </div>

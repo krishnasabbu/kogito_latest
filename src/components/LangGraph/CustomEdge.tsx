@@ -35,16 +35,30 @@ export const CustomEdge: React.FC<EdgeProps> = ({
   };
 
   return (
-    <g className="react-flow__edge">
-      <path
-        id={id}
-        className="react-flow__edge-path"
-        d={path}
-        fill="none"
-        stroke={style.stroke || '#D71E28'}
-        strokeWidth={style.strokeWidth || 2}
-        markerEnd={markerEnd}
-      />
+    <>
+      <defs>
+        <marker
+          id={`arrow-${id}`}
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="6"
+          markerHeight="6"
+          orient="auto"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#D71E28" />
+        </marker>
+      </defs>
+      <g className="react-flow__edge">
+        <path
+          id={id}
+          className="react-flow__edge-path"
+          d={path}
+          fill="none"
+          stroke={style.stroke || '#D71E28'}
+          strokeWidth={style.strokeWidth || 2}
+          markerEnd={`url(#arrow-${id})`}
+        />
 
       <circle
         cx={labelX}
@@ -80,6 +94,7 @@ export const CustomEdge: React.FC<EdgeProps> = ({
           {data.condition}
         </text>
       )}
-    </g>
+      </g>
+    </>
   );
 };
