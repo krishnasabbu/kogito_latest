@@ -3,15 +3,17 @@ import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, Connection
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { ServiceNode } from './ServiceNode';
 import { DecisionNode } from './DecisionNode';
+import { LLMNode } from './LLMNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Plus, Download, Trash2, GitBranch, Code, Save, Undo } from 'lucide-react';
+import { Plus, Download, Trash2, GitBranch, Code, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const nodeTypes = {
   serviceNode: ServiceNode,
   decisionNode: DecisionNode,
+  llmNode: LLMNode,
 };
 
 const edgeTypes = {
@@ -32,6 +34,7 @@ export const LangGraphBuilder: React.FC = () => {
     onConnect,
     addServiceNode,
     addDecisionNode,
+    addLLMNode,
     clearCanvas,
     exportJSON,
     setInputs,
@@ -71,10 +74,31 @@ export const LangGraphBuilder: React.FC = () => {
     toast.success('Decision node added');
   };
 
+  const handleAddLLMNode = () => {
+    const position = {
+      x: Math.random() * 400 + 100,
+      y: Math.random() * 300 + 100,
+    };
+    addLLMNode(position);
+    toast.success('LLM node added');
+  };
+
   const handleClearCanvas = () => {
     if (window.confirm('Are you sure you want to clear the entire canvas?')) {
       clearCanvas();
       toast.success('Canvas cleared');
+    }
+  };
+
+  const handleSaveJSON = () => {
+    try {
+      const parsedInput = JSON.parse(inputJSON);
+      setInputs(parsedInput);
+      const json = exportJSON();
+      navigator.clipboard.writeText(json);
+      toast.success('JSON saved to clipboard');
+    } catch (error) {
+      toast.error('Invalid input JSON format');
     }
   };
 
@@ -169,6 +193,13 @@ export const LangGraphBuilder: React.FC = () => {
               <GitBranch className="w-4 h-4 mr-2" />
               Decision Node
             </Button>
+            <Button
+              onClick={handleAddLLMNode}
+              className="w-full bg-[#10b981] hover:bg-[#059669] text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              LLM Node
+            </Button>
           </Card>
 
           <Card className="p-4 space-y-3">
@@ -187,6 +218,13 @@ export const LangGraphBuilder: React.FC = () => {
           <Card className="p-4 space-y-3">
             <h3 className="font-semibold text-sm text-gray-900">Actions</h3>
             <Button
+              onClick={handleSaveJSON}
+              className="w-full bg-[#D71E28] hover:bg-[#BB1A21] text-white"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save JSON
+            </Button>
+            <Button
               onClick={handleTogglePreview}
               variant="outline"
               className="w-full"
@@ -200,7 +238,7 @@ export const LangGraphBuilder: React.FC = () => {
               className="w-full"
             >
               <Download className="w-4 h-4 mr-2" />
-              Export JSON
+              Download JSON
             </Button>
             <Button
               onClick={handleClearCanvas}

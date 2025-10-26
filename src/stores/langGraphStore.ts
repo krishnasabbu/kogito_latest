@@ -13,7 +13,13 @@ export interface DecisionNodeData {
   label: string;
 }
 
-export type NodeData = ServiceNodeData | DecisionNodeData;
+export interface LLMNodeData {
+  model: string;
+  prompt: string;
+  label: string;
+}
+
+export type NodeData = ServiceNodeData | DecisionNodeData | LLMNodeData;
 
 export interface LangGraphEdge extends Edge {
   data?: {
@@ -34,6 +40,7 @@ interface LangGraphState {
 
   addServiceNode: (position: { x: number; y: number }) => void;
   addDecisionNode: (position: { x: number; y: number }) => void;
+  addLLMNode: (position: { x: number; y: number }) => void;
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void;
   deleteNode: (nodeId: string) => void;
   updateEdgeCondition: (edgeId: string, condition: string) => void;
@@ -109,6 +116,21 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
     set({ nodes: [...get().nodes, newNode] });
   },
 
+  addLLMNode: (position) => {
+    const id = `llm-${nodeIdCounter++}`;
+    const newNode: Node<LLMNodeData> = {
+      id,
+      type: 'llmNode',
+      position,
+      data: {
+        label: id,
+        model: '',
+        prompt: '',
+      },
+    };
+    set({ nodes: [...get().nodes, newNode] });
+  },
+
   updateNodeData: (nodeId, data) => {
     set({
       nodes: get().nodes.map((node) =>
@@ -151,7 +173,7 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
       graph: {
         nodes: state.nodes.map((node) => ({
           id: node.id,
-          type: node.type === 'serviceNode' ? 'service' : 'decision',
+          type: node.type === 'serviceNode' ? 'service' : node.type === 'decisionNode' ? 'decision' : 'llm',
           data: node.data,
         })),
         edges: state.edges.map((edge) => ({
