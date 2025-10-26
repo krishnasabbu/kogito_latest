@@ -41,31 +41,31 @@ export const CustomEdge: React.FC<EdgeProps> = ({
         className="react-flow__edge-path"
         d={path}
         fill="none"
-        stroke={style.stroke || '#3b82f6'}
-        strokeWidth={style.strokeWidth || 4}
+        stroke={style.stroke || '#D71E28'}
+        strokeWidth={style.strokeWidth || 2}
         markerEnd={markerEnd}
       />
 
       <circle
         cx={labelX}
         cy={labelY}
-        r={18}
+        r={16}
         fill="white"
-        stroke="#3b82f6"
-        strokeWidth={3}
+        stroke="#D71E28"
+        strokeWidth={2}
         style={{ cursor: 'pointer' }}
         onClick={handleButtonClick}
       />
 
       <foreignObject
-        width={36}
-        height={36}
-        x={labelX - 18}
-        y={labelY - 18}
+        width={32}
+        height={32}
+        x={labelX - 16}
+        y={labelY - 16}
         style={{ pointerEvents: 'none' }}
       >
         <div className="flex items-center justify-center w-full h-full">
-          <Settings className="w-5 h-5 text-blue-600" />
+          <Settings className="w-4 h-4 text-[#D71E28]" />
         </div>
       </foreignObject>
 
@@ -73,7 +73,7 @@ export const CustomEdge: React.FC<EdgeProps> = ({
         <text
           x={labelX + 28}
           y={labelY + 5}
-          fill="#3b82f6"
+          fill="#D71E28"
           fontSize={12}
           fontWeight={600}
         >

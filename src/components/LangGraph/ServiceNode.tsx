@@ -23,11 +23,11 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
   };
 
   return (
-    <div className="bg-white border-4 border-blue-600 rounded-xl shadow-2xl min-w-[300px] hover:shadow-blue-300 hover:border-blue-700 transition-all">
-      <Handle type="target" position={Position.Top} className="w-5 h-5 bg-blue-600 border-3 border-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all" />
-      <Handle type="source" position={Position.Right} className="w-5 h-5 bg-blue-600 border-3 border-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all" />
+    <div className="bg-white border-2 border-[#D71E28] rounded-lg shadow-lg min-w-[280px] hover:shadow-xl transition-all">
+      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-[#D71E28] border-2 border-white" />
+      <Handle type="source" position={Position.Right} className="w-3 h-3 bg-[#D71E28] border-2 border-white" />
 
-      <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white px-4 py-3 rounded-t-xl flex items-center justify-between shadow-md">
+      <div className="bg-[#D71E28] text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1">
           <Globe className="w-4 h-4" />
           {isEditingLabel ? (
@@ -53,13 +53,13 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 hover:bg-blue-700 rounded transition-colors"
+            className="p-1 hover:bg-[#BB1A21] rounded transition-colors"
           >
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           <button
             onClick={() => deleteNode(id)}
-            className="p-1 hover:bg-red-600 rounded transition-colors"
+            className="p-1 hover:bg-[#BB1A21] rounded transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -67,10 +67,10 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
       </div>
 
       {isExpanded && (
-        <div className="p-5 space-y-4 bg-gradient-to-br from-white to-blue-50">
+        <div className="p-4 space-y-3 bg-white">
           <div className="flex items-center gap-2">
-            <div className="w-1 h-4 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-            <div className="text-xs font-bold text-blue-700 uppercase tracking-wider">Service Node</div>
+            <div className="w-1 h-4 bg-[#D71E28] rounded-full"></div>
+            <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Service Node</div>
           </div>
 
           <div>
@@ -80,7 +80,7 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
               value={data.url}
               onChange={(e) => updateNodeData(id, { url: e.target.value })}
               placeholder="https://api.example.com/endpoint"
-              className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#D71E28] focus:border-[#D71E28]"
             />
           </div>
 
@@ -104,13 +104,12 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
               value={data.request}
               onChange={(e) => updateNodeData(id, { request: e.target.value })}
               placeholder='{"key": "value"}'
-              className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg font-mono resize-none h-24 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 transition-all"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded font-mono resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#D71E28] focus:border-[#D71E28] bg-gray-50"
             />
           </div>
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-5 h-5 bg-blue-600 border-3 border-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all" />
     </div>
   );
 };

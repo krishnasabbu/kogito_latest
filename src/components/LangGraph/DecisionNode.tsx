@@ -21,11 +21,11 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
   };
 
   return (
-    <div className="bg-white border-4 border-purple-600 rounded-xl shadow-2xl min-w-[300px] hover:shadow-purple-300 hover:border-purple-700 transition-all">
-      <Handle type="target" position={Position.Top} className="w-5 h-5 bg-purple-600 border-3 border-white shadow-lg hover:bg-purple-700 hover:scale-110 transition-all" />
-      <Handle type="source" position={Position.Right} className="w-5 h-5 bg-purple-600 border-3 border-white shadow-lg hover:bg-purple-700 hover:scale-110 transition-all" />
+    <div className="bg-white border-2 border-[#FFCD41] rounded-lg shadow-lg min-w-[280px] hover:shadow-xl transition-all">
+      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-[#FFCD41] border-2 border-white" />
+      <Handle type="source" position={Position.Right} className="w-3 h-3 bg-[#FFCD41] border-2 border-white" />
 
-      <div className="bg-gradient-to-r from-purple-500 via-purple-600 to-pink-600 text-white px-4 py-3 rounded-t-xl flex items-center justify-between shadow-md">
+      <div className="bg-[#FFCD41] text-gray-900 px-4 py-3 rounded-t-lg flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1">
           <GitBranch className="w-4 h-4" />
           {isEditingLabel ? (
@@ -51,13 +51,13 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 hover:bg-purple-700 rounded transition-colors"
+            className="p-1 hover:bg-[#E6B800] rounded transition-colors"
           >
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           <button
             onClick={() => deleteNode(id)}
-            className="p-1 hover:bg-red-600 rounded transition-colors"
+            className="p-1 hover:bg-[#E6B800] rounded transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -65,10 +65,10 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
       </div>
 
       {isExpanded && (
-        <div className="p-5 space-y-4 bg-gradient-to-br from-white to-purple-50">
+        <div className="p-4 space-y-3 bg-white">
           <div className="flex items-center gap-2">
-            <div className="w-1 h-4 bg-gradient-to-b from-purple-500 to-pink-600 rounded-full"></div>
-            <div className="text-xs font-bold text-purple-700 uppercase tracking-wider">Decision Node</div>
+            <div className="w-1 h-4 bg-[#FFCD41] rounded-full"></div>
+            <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Decision Node</div>
           </div>
 
           <div>
@@ -79,7 +79,7 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
               value={data.script}
               onChange={(e) => updateNodeData(id, { script: e.target.value })}
               placeholder="state['field'] == 'value'"
-              className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg font-mono resize-none h-32 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50 transition-all"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded font-mono resize-none h-32 focus:outline-none focus:ring-2 focus:ring-[#FFCD41] focus:border-[#FFCD41] bg-gray-50"
             />
             <p className="text-xs text-gray-500 mt-2">
               Write a condition to evaluate the workflow state
@@ -88,7 +88,6 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} className="w-5 h-5 bg-purple-600 border-3 border-white shadow-lg hover:bg-purple-700 hover:scale-110 transition-all" />
     </div>
   );
 };

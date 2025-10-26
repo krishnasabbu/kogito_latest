@@ -3,19 +3,15 @@ import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, Connection
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { ServiceNode } from './ServiceNode';
 import { DecisionNode } from './DecisionNode';
-import { StartNode } from './StartNode';
-import { EndNode } from './EndNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Plus, Download, Trash2, GitBranch, Code, Play, Square } from 'lucide-react';
+import { Plus, Download, Trash2, GitBranch, Code, Save, Undo } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const nodeTypes = {
   serviceNode: ServiceNode,
   decisionNode: DecisionNode,
-  startNode: StartNode,
-  endNode: EndNode,
 };
 
 const edgeTypes = {
@@ -36,8 +32,6 @@ export const LangGraphBuilder: React.FC = () => {
     onConnect,
     addServiceNode,
     addDecisionNode,
-    addStartNode,
-    addEndNode,
     clearCanvas,
     exportJSON,
     setInputs,
@@ -75,24 +69,6 @@ export const LangGraphBuilder: React.FC = () => {
     };
     addDecisionNode(position);
     toast.success('Decision node added');
-  };
-
-  const handleAddStartNode = () => {
-    const position = {
-      x: Math.random() * 400 + 100,
-      y: Math.random() * 300 + 100,
-    };
-    addStartNode(position);
-    toast.success('Start node added');
-  };
-
-  const handleAddEndNode = () => {
-    const position = {
-      x: Math.random() * 400 + 100,
-      y: Math.random() * 300 + 100,
-    };
-    addEndNode(position);
-    toast.success('End node added');
   };
 
   const handleClearCanvas = () => {
@@ -177,35 +153,21 @@ export const LangGraphBuilder: React.FC = () => {
             </p>
           </div>
 
-          <Card className="p-4 space-y-3">
-            <h3 className="font-semibold text-sm text-gray-900">Add Nodes</h3>
-            <Button
-              onClick={handleAddStartNode}
-              className="w-full bg-green-500 hover:bg-green-600 text-white"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Add Start Node
-            </Button>
+          <Card className="p-4 space-y-3 bg-white dark:bg-gray-800">
+            <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Add Nodes</h3>
             <Button
               onClick={handleAddServiceNode}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+              className="w-full bg-[#D71E28] hover:bg-[#BB1A21] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Service Node
+              Service Node
             </Button>
             <Button
               onClick={handleAddDecisionNode}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-white"
+              className="w-full bg-[#FFCD41] hover:bg-[#E6B800] text-gray-900"
             >
               <GitBranch className="w-4 h-4 mr-2" />
-              Add Decision Node
-            </Button>
-            <Button
-              onClick={handleAddEndNode}
-              className="w-full bg-red-500 hover:bg-red-600 text-white"
-            >
-              <Square className="w-4 h-4 mr-2" />
-              Add End Node
+              Decision Node
             </Button>
           </Card>
 
@@ -275,10 +237,11 @@ export const LangGraphBuilder: React.FC = () => {
           defaultEdgeOptions={{
             type: 'custom',
             animated: true,
-            style: { stroke: '#3b82f6', strokeWidth: 4 },
+            style: { stroke: '#D71E28', strokeWidth: 2 },
+            markerEnd: { type: 'arrowclosed', color: '#D71E28' },
           }}
           connectionLineType={ConnectionLineType.SmoothStep}
-          connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 4 }}
+          connectionLineStyle={{ stroke: '#D71E28', strokeWidth: 2 }}
           nodesDraggable={true}
           nodesConnectable={true}
           elementsSelectable={true}
@@ -286,19 +249,17 @@ export const LangGraphBuilder: React.FC = () => {
           fitViewOptions={{
             padding: 0.2,
           }}
-          className="bg-gradient-to-br from-gray-50 to-blue-50"
+          className="bg-gray-50 dark:bg-gray-900"
         >
-          <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
-          <Controls className="bg-white shadow-lg rounded-lg border border-gray-200" />
+          <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#e5e7eb" />
+          <Controls className="bg-white dark:bg-gray-800 shadow-lg rounded border border-gray-200 dark:border-gray-700" />
           <MiniMap
             nodeColor={(node) => {
-              if (node.type === 'startNode') return '#22c55e';
-              if (node.type === 'serviceNode') return '#3b82f6';
-              if (node.type === 'decisionNode') return '#f59e0b';
-              if (node.type === 'endNode') return '#ef4444';
-              return '#64748b';
+              if (node.type === 'serviceNode') return '#D71E28';
+              if (node.type === 'decisionNode') return '#FFCD41';
+              return '#9ca3af';
             }}
-            className="bg-white border-2 border-gray-300 rounded-lg shadow-lg"
+            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow"
           />
         </ReactFlow>
 
