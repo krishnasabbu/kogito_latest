@@ -51,13 +51,22 @@ export const CustomEdge: React.FC<EdgeProps> = ({
       </defs>
       <g className="react-flow__edge">
         <path
+          d={path}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={20}
+          style={{ cursor: 'pointer' }}
+        />
+
+        <path
           id={id}
           className="react-flow__edge-path"
           d={path}
           fill="none"
-          stroke={style.stroke || '#D71E28'}
-          strokeWidth={style.strokeWidth || 2}
+          stroke="#D71E28"
+          strokeWidth={3}
           markerEnd={`url(#arrow-${id})`}
+          style={{ pointerEvents: 'none' }}
         />
 
       <circle
