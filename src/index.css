@@ -185,20 +185,25 @@ body {
 }
 
 /* React Flow custom styles */
-.react-flow__edge-path {
-  stroke: #D71E28;
-  stroke-width: 3;
-  fill: none;
+.react-flow__edge path {
+  stroke: #D71E28 !important;
+  stroke-width: 3 !important;
+  fill: none !important;
+}
+
+.react-flow__edge-interaction {
+  stroke: transparent !important;
+  stroke-width: 20 !important;
 }
 
 .react-flow__edge {
-  pointer-events: all;
-  cursor: pointer;
+  pointer-events: all !important;
+  cursor: pointer !important;
 }
 
-.react-flow__edge.selected .react-flow__edge-path {
-  stroke: #BB1A21;
-  stroke-width: 4;
+.react-flow__edge.selected path:not(.react-flow__edge-interaction) {
+  stroke: #BB1A21 !important;
+  stroke-width: 4 !important;
 }
 
 .react-flow__node {

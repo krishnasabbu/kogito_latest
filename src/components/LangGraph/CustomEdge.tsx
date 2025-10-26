@@ -45,6 +45,7 @@ export const CustomEdge: React.FC<EdgeProps> = ({
           markerWidth="6"
           markerHeight="6"
           orient="auto"
+          markerUnits="userSpaceOnUse"
         >
           <path d="M 0 0 L 10 5 L 0 10 z" fill="#D71E28" />
         </marker>
@@ -55,18 +56,20 @@ export const CustomEdge: React.FC<EdgeProps> = ({
           fill="none"
           stroke="transparent"
           strokeWidth={20}
+          className="react-flow__edge-interaction"
           style={{ cursor: 'pointer' }}
         />
 
         <path
           id={id}
-          className="react-flow__edge-path"
           d={path}
           fill="none"
           stroke="#D71E28"
           strokeWidth={3}
+          strokeLinecap="round"
+          strokeLinejoin="round"
           markerEnd={`url(#arrow-${id})`}
-          style={{ pointerEvents: 'none' }}
+          style={{ pointerEvents: 'visibleStroke' }}
         />
 
       <circle
