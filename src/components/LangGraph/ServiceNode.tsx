@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
-import { Trash2, ChevronDown, ChevronUp, Globe, Settings, Play } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, Globe, Settings } from 'lucide-react';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { ServiceConfigModal } from './ServiceConfigModal';
-import { ServiceExecuteModal } from './ServiceExecuteModal';
 import { Button } from '../ui/button';
 
 interface ServiceNodeProps {
@@ -20,7 +19,6 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showExecuteModal, setShowExecuteModal] = useState(false);
   const { updateNodeData, deleteNode, inputs } = useLangGraphStore();
 
   const handleLabelChange = (newLabel: string) => {
@@ -124,23 +122,13 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setShowConfigModal(true)}
-              className="flex-1 bg-[#D71E28] hover:bg-[#BB1A21] text-white text-xs py-2"
-            >
-              <Settings className="w-3 h-3 mr-1" />
-              Configure
-            </Button>
-            <Button
-              onClick={() => setShowExecuteModal(true)}
-              className="flex-1 bg-[#10b981] hover:bg-[#059669] text-white text-xs py-2"
-              disabled={!data.url}
-            >
-              <Play className="w-3 h-3 mr-1" />
-              Execute
-            </Button>
-          </div>
+          <Button
+            onClick={() => setShowConfigModal(true)}
+            className="w-full bg-[#D71E28] hover:bg-[#BB1A21] text-white text-xs py-2"
+          >
+            <Settings className="w-3 h-3 mr-1" />
+            Configure Request
+          </Button>
         </div>
       )}
 
@@ -152,13 +140,6 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
         initialInputs={inputs}
       />
 
-      <ServiceExecuteModal
-        isOpen={showExecuteModal}
-        onClose={() => setShowExecuteModal(false)}
-        url={data.url}
-        method={data.method}
-        requestTemplate={data.request}
-      />
 
     </div>
   );

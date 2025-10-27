@@ -65,10 +65,10 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-2xl w-[90%] h-[80%] flex flex-col">
-        <div className="bg-[#D71E28] text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
-          <h2 className="text-xl font-bold">Configure Service Request</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-[9999]">
+      <div className="bg-white w-full h-full flex flex-col">
+        <div className="bg-[#D71E28] text-white px-8 py-6 flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Configure Service Request</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-[#BB1A21] rounded transition-colors"
@@ -78,17 +78,17 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
         </div>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className="w-1/3 border-r border-gray-200 p-4 overflow-y-auto bg-gray-50">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Available Fields</h3>
-            <p className="text-xs text-gray-500 mb-4">Drag fields to the JSON template</p>
-            <div className="space-y-2">
+          <div className="w-1/3 border-r border-gray-200 p-6 overflow-y-auto bg-gray-50">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Available Fields</h3>
+            <p className="text-sm text-gray-600 mb-6">Drag fields to the JSON template on the right</p>
+            <div className="space-y-3">
               {fieldPaths.map((field) => (
                 <div
                   key={field}
                   draggable
                   onDragStart={() => handleDragStart(field)}
                   onDragEnd={handleDragEnd}
-                  className="bg-white border border-gray-300 rounded px-3 py-2 text-sm font-mono cursor-move hover:bg-blue-50 hover:border-blue-400 transition-all shadow-sm"
+                  className="bg-white border-2 border-gray-300 rounded-lg px-4 py-3 text-base font-mono cursor-move hover:bg-blue-50 hover:border-blue-500 transition-all shadow-md hover:shadow-lg"
                 >
                   {field}
                 </div>
@@ -96,9 +96,9 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
             </div>
           </div>
 
-          <div className="flex-1 p-4 flex flex-col">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">JSON Template</h3>
-            <p className="text-xs text-gray-500 mb-2">
+          <div className="flex-1 p-6 flex flex-col">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">JSON Template</h3>
+            <p className="text-sm text-gray-600 mb-4">
               Drop fields here or type manually. Use {'{{'} and {'}}'}  to wrap field references.
             </p>
             <textarea
@@ -106,19 +106,19 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
               onChange={(e) => setJsonTemplate(e.target.value)}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
-              className="flex-1 w-full px-4 py-3 text-sm font-mono border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28] focus:border-[#D71E28] bg-white resize-none"
+              className="flex-1 w-full px-6 py-4 text-base font-mono border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28] focus:border-[#D71E28] bg-white resize-none"
               placeholder='{\n  "key": "{{field.name}}",\n  "value": "static value"\n}'
             />
           </div>
         </div>
 
-        <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>
+        <div className="border-t border-gray-200 px-8 py-6 flex justify-end gap-4">
+          <Button variant="outline" onClick={onClose} className="px-6 py-3 text-base">
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-[#D71E28] hover:bg-[#BB1A21] text-white"
+            className="bg-[#D71E28] hover:bg-[#BB1A21] text-white px-8 py-3 text-base"
           >
             Save Configuration
           </Button>

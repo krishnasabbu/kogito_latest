@@ -7,8 +7,9 @@ import { LLMNode } from './LLMNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Plus, Download, Trash2, GitBranch, Code, Save, Upload } from 'lucide-react';
+import { Plus, Download, Trash2, GitBranch, Code, Save, Upload, Play } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { WorkflowExecuteModal } from './WorkflowExecuteModal';
 
 const nodeTypes = {
   serviceNode: ServiceNode,
@@ -25,6 +26,7 @@ export const LangGraphBuilder: React.FC = () => {
   const [inputJSON, setInputJSON] = useState('{\n  "message": {}\n}');
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [edgeCondition, setEdgeCondition] = useState('');
+  const [showExecuteModal, setShowExecuteModal] = useState(false);
 
   const {
     nodes,
@@ -124,6 +126,16 @@ export const LangGraphBuilder: React.FC = () => {
       }
     };
     input.click();
+  };
+
+  const handleExecuteWorkflow = () => {
+    try {
+      const parsedInput = JSON.parse(inputJSON);
+      setInputs(parsedInput);
+      setShowExecuteModal(true);
+    } catch (error) {
+      toast.error('Invalid input JSON format');
+    }
   };
 
   const handleExportJSON = () => {
@@ -254,6 +266,13 @@ export const LangGraphBuilder: React.FC = () => {
             >
               <Upload className="w-4 h-4 mr-2" />
               Load JSON
+            </Button>
+            <Button
+              onClick={handleExecuteWorkflow}
+              className="w-full bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-semibold"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Execute Workflow
             </Button>
             <Button
               onClick={handleTogglePreview}
@@ -409,6 +428,12 @@ export const LangGraphBuilder: React.FC = () => {
           </div>
         )}
       </div>
+
+      <WorkflowExecuteModal
+        isOpen={showExecuteModal}
+        onClose={() => setShowExecuteModal(false)}
+        workflowJSON={exportJSON()}
+      />
     </div>
   );
 };
