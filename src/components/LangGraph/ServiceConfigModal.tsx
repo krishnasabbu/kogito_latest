@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Play } from 'lucide-react';
 import { Button } from '../ui/button';
 
@@ -64,7 +65,7 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
     onClose();
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-[9999]">
       <div className="bg-white w-full h-full flex flex-col">
         <div className="bg-[#D71E28] text-white px-8 py-6 flex items-center justify-between">
@@ -126,4 +127,6 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };

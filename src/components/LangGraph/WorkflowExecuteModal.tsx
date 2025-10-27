@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Loader2, Play } from 'lucide-react';
 import { Button } from '../ui/button';
 import axios from 'axios';
@@ -98,7 +99,7 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-[9999]">
       <div className="bg-white w-full h-full flex flex-col">
         <div className="bg-[#10b981] text-white px-8 py-6 flex items-center justify-between">
@@ -172,4 +173,6 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
