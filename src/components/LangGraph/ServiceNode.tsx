@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
-import { Trash2, ChevronDown, ChevronUp, Globe } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, Globe, Settings, Play } from 'lucide-react';
 import { useLangGraphStore } from '../../stores/langGraphStore';
+import { ServiceConfigModal } from './ServiceConfigModal';
+import { ServiceExecuteModal } from './ServiceExecuteModal';
+import { Button } from '../ui/button';
 
 interface ServiceNodeProps {
   id: string;
@@ -16,7 +19,9 @@ interface ServiceNodeProps {
 export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
-  const { updateNodeData, deleteNode } = useLangGraphStore();
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showExecuteModal, setShowExecuteModal] = useState(false);
+  const { updateNodeData, deleteNode, inputs } = useLangGraphStore();
 
   const handleLabelChange = (newLabel: string) => {
     updateNodeData(id, { label: newLabel });
@@ -100,15 +105,60 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
 
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-2">Request Body</label>
-            <textarea
-              value={data.request}
-              onChange={(e) => updateNodeData(id, { request: e.target.value })}
-              placeholder='{"key": "value"}'
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded font-mono resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#D71E28] focus:border-[#D71E28] bg-gray-50"
-            />
+            <div className="relative">
+              <textarea
+                value={data.request}
+                onChange={(e) => updateNodeData(id, { request: e.target.value })}
+                placeholder='{"key": "{{field.name}}"}'
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded font-mono resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#D71E28] focus:border-[#D71E28] bg-gray-50"
+                readOnly
+                onClick={() => setShowConfigModal(true)}
+              />
+              <button
+                onClick={() => setShowConfigModal(true)}
+                className="absolute top-2 right-2 p-1 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                title="Configure Request"
+              >
+                <Settings className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowConfigModal(true)}
+              className="flex-1 bg-[#D71E28] hover:bg-[#BB1A21] text-white text-xs py-2"
+            >
+              <Settings className="w-3 h-3 mr-1" />
+              Configure
+            </Button>
+            <Button
+              onClick={() => setShowExecuteModal(true)}
+              className="flex-1 bg-[#10b981] hover:bg-[#059669] text-white text-xs py-2"
+              disabled={!data.url}
+            >
+              <Play className="w-3 h-3 mr-1" />
+              Execute
+            </Button>
           </div>
         </div>
       )}
+
+      <ServiceConfigModal
+        isOpen={showConfigModal}
+        onClose={() => setShowConfigModal(false)}
+        onSave={(requestBody) => updateNodeData(id, { request: requestBody })}
+        initialValue={data.request}
+        initialInputs={inputs}
+      />
+
+      <ServiceExecuteModal
+        isOpen={showExecuteModal}
+        onClose={() => setShowExecuteModal(false)}
+        url={data.url}
+        method={data.method}
+        requestTemplate={data.request}
+      />
 
     </div>
   );
