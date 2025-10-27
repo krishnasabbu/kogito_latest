@@ -46,8 +46,27 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
     try {
       const workflow = JSON.parse(workflowJSON);
       const inputs = JSON.parse(inputJson);
-      const nodes = workflow.graph?.nodes || [];
 
+      // Send workflow execution request to dummy API
+      const apiResponse = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workflow: workflow,
+          inputs: inputs,
+        }),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error('API request failed');
+      }
+
+      const apiResult = await apiResponse.json();
+
+      // Simulate workflow execution results
+      const nodes = workflow.graph?.nodes || [];
       let executionResults: any[] = [];
 
       for (const node of nodes) {
@@ -88,7 +107,15 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
         }
       }
 
-      setResponse(JSON.stringify(executionResults, null, 2));
+      const finalResult = {
+        apiSubmission: {
+          id: apiResult.id,
+          message: 'Workflow submitted to API successfully',
+        },
+        nodeExecutions: executionResults,
+      };
+
+      setResponse(JSON.stringify(finalResult, null, 2));
       toast.success('Workflow execution completed');
     } catch (error: any) {
       const errorMessage = error.message || 'Workflow execution failed';

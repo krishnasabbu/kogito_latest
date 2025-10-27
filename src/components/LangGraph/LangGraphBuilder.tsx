@@ -138,7 +138,7 @@ export const LangGraphBuilder: React.FC = () => {
     }
   };
 
-  const handleExportJSON = () => {
+  const handleExportJSON = async () => {
     try {
       const parsedInput = JSON.parse(inputJSON);
       setInputs(parsedInput);
@@ -148,6 +148,28 @@ export const LangGraphBuilder: React.FC = () => {
     }
 
     const json = exportJSON();
+
+    // Save to API
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success(`Graph saved successfully! ID: ${result.id}`);
+      } else {
+        toast.error('Failed to save graph to API');
+      }
+    } catch (apiError) {
+      toast.error('API call failed');
+    }
+
+    // Also download locally
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -157,7 +179,6 @@ export const LangGraphBuilder: React.FC = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success('Graph exported successfully');
   };
 
   const handleTogglePreview = () => {

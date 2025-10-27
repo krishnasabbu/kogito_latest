@@ -29,10 +29,10 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
 
   if (!isOpen) return null;
 
-  const getFieldPaths = (obj: any, prefix = ''): string[] => {
+  const getFieldPaths = (obj: any, prefix = 'input'): string[] => {
     let paths: string[] = [];
     for (const key in obj) {
-      const newPath = prefix ? `${prefix}.${key}` : key;
+      const newPath = `${prefix}.${key}`;
       paths.push(newPath);
       if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
         paths = paths.concat(getFieldPaths(obj[key], newPath));
@@ -57,7 +57,7 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
       const cursorPosition = (e.target as HTMLTextAreaElement).selectionStart || 0;
       const textBefore = jsonTemplate.substring(0, cursorPosition);
       const textAfter = jsonTemplate.substring(cursorPosition);
-      const newText = `${textBefore}{{${draggedField}}}${textAfter}`;
+      const newText = `${textBefore}{${draggedField}}${textAfter}`;
       setJsonTemplate(newText);
     }
   };
@@ -106,7 +106,7 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
           <div className="flex-1 p-6 flex flex-col">
             <h3 className="text-lg font-bold text-gray-800 mb-4">JSON Template</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Drop fields here or type manually. Use {'{{'} and {'}}'}  to wrap field references.
+              Drop fields here or type manually. Use single braces {'{'} and {'}'} to wrap field references.
             </p>
             <textarea
               value={jsonTemplate}
@@ -114,7 +114,7 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               className="flex-1 w-full px-6 py-4 text-base font-mono border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28] focus:border-[#D71E28] bg-white resize-none"
-              placeholder='{\n  "key": "{{field.name}}",\n  "value": "static value"\n}'
+              placeholder='{\n  "key": "{input.field.name}",\n  "value": "static value"\n}'
             />
           </div>
         </div>
