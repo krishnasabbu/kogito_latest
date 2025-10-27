@@ -245,18 +245,26 @@ export const LangGraphBuilder: React.FC = () => {
             </p>
             <textarea
               value={inputJSON}
-              onChange={(e) => {
-                setInputJSON(e.target.value);
-                try {
-                  const parsed = JSON.parse(e.target.value);
-                  setInputs(parsed);
-                } catch (error) {
-                  // Silently ignore parse errors while typing
-                }
-              }}
+              onChange={(e) => setInputJSON(e.target.value)}
               className="w-full h-32 px-3 py-2 text-xs font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               placeholder='{\n  "message": {}\n}'
             />
+            <Button
+              onClick={() => {
+                try {
+                  const parsed = JSON.parse(inputJSON);
+                  setInputs(parsed);
+                  toast.success('Input configuration updated');
+                } catch (error) {
+                  toast.error('Invalid JSON format');
+                }
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              size="sm"
+            >
+              <Save className="w-3 h-3 mr-2" />
+              Save Input Config
+            </Button>
           </Card>
 
           <Card className="p-4 space-y-3">
