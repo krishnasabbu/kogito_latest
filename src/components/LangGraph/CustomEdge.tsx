@@ -14,7 +14,7 @@ export const CustomEdge: React.FC<EdgeProps> = ({
   style = {},
   markerEnd,
 }) => {
-  const edgePath = getSmoothStepPath({
+  const path = getSmoothStepPath({
     sourceX,
     sourceY,
     sourcePosition,
@@ -22,8 +22,6 @@ export const CustomEdge: React.FC<EdgeProps> = ({
     targetY,
     targetPosition,
   });
-
-  const [path] = edgePath;
   const labelX = (sourceX + targetX) / 2;
   const labelY = (sourceY + targetY) / 2;
 
