@@ -245,7 +245,15 @@ export const LangGraphBuilder: React.FC = () => {
             </p>
             <textarea
               value={inputJSON}
-              onChange={(e) => setInputJSON(e.target.value)}
+              onChange={(e) => {
+                setInputJSON(e.target.value);
+                try {
+                  const parsed = JSON.parse(e.target.value);
+                  setInputs(parsed);
+                } catch (error) {
+                  // Silently ignore parse errors while typing
+                }
+              }}
               className="w-full h-32 px-3 py-2 text-xs font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               placeholder='{\n  "message": {}\n}'
             />

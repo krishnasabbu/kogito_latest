@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Play } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -20,6 +20,12 @@ export const ServiceConfigModal: React.FC<ServiceConfigModalProps> = ({
 }) => {
   const [jsonTemplate, setJsonTemplate] = useState(initialValue || '{}');
   const [draggedField, setDraggedField] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setJsonTemplate(initialValue || '{}');
+    }
+  }, [isOpen, initialValue]);
 
   if (!isOpen) return null;
 
