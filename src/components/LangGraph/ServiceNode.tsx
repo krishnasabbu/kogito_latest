@@ -132,13 +132,15 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
         </div>
       )}
 
-      <ServiceConfigModal
-        isOpen={showConfigModal}
-        onClose={() => setShowConfigModal(false)}
-        onSave={(requestBody) => updateNodeData(id, { request: requestBody })}
-        initialValue={data.request}
-        initialInputs={inputs}
-      />
+      {showConfigModal && (
+        <ServiceConfigModal
+          isOpen={showConfigModal}
+          onClose={() => setShowConfigModal(false)}
+          onSave={(requestBody) => updateNodeData(id, { request: requestBody })}
+          initialValue={data.request}
+          initialInputs={inputs}
+        />
+      )}
 
 
     </div>
