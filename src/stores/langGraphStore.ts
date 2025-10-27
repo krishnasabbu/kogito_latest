@@ -48,6 +48,7 @@ interface LangGraphState {
   setInputs: (inputs: Record<string, any>) => void;
   clearCanvas: () => void;
   exportJSON: () => string;
+  importJSON: (jsonString: string) => void;
 }
 
 let nodeIdCounter = 1;
@@ -185,5 +186,40 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
       },
     };
     return JSON.stringify(exportData, null, 2);
+  },
+
+  importJSON: (jsonString: string) => {
+    try {
+      const data = JSON.parse(jsonString);
+      const graph = data.graph || data;
+
+      const importedNodes: Node<NodeData>[] = (graph.nodes || []).map((node: any, index: number) => {
+        const nodeType = node.type === 'service' ? 'serviceNode' : node.type === 'decision' ? 'decisionNode' : 'llmNode';
+        return {
+          id: node.id,
+          type: nodeType,
+          position: { x: 100 + (index * 50), y: 100 + (index * 50) },
+          data: node.data,
+        };
+      });
+
+      const importedEdges: LangGraphEdge[] = (graph.edges || []).map((edge: any) => ({
+        id: `edge-${edge.source}-${edge.target}-${Date.now()}`,
+        source: edge.source,
+        target: edge.target,
+        type: 'custom',
+        animated: true,
+        style: { stroke: '#3b82f6', strokeWidth: 4 },
+        data: { condition: edge.condition || '' },
+      }));
+
+      set({
+        nodes: importedNodes,
+        edges: importedEdges,
+        inputs: graph.inputs || {},
+      });
+    } catch (error) {
+      throw new Error('Invalid JSON format');
+    }
   },
 }));

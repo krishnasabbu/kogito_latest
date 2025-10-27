@@ -7,7 +7,7 @@ import { LLMNode } from './LLMNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Plus, Download, Trash2, GitBranch, Code, Save } from 'lucide-react';
+import { Plus, Download, Trash2, GitBranch, Code, Save, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const nodeTypes = {
@@ -37,6 +37,7 @@ export const LangGraphBuilder: React.FC = () => {
     addLLMNode,
     clearCanvas,
     exportJSON,
+    importJSON,
     setInputs,
     updateEdgeCondition,
     setEdges,
@@ -100,6 +101,29 @@ export const LangGraphBuilder: React.FC = () => {
     } catch (error) {
       toast.error('Invalid input JSON format');
     }
+  };
+
+  const handleLoadJSON = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const jsonString = event.target?.result as string;
+            importJSON(jsonString);
+            toast.success('Workflow loaded successfully');
+          } catch (error) {
+            toast.error('Failed to load JSON');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
   };
 
   const handleExportJSON = () => {
@@ -225,6 +249,13 @@ export const LangGraphBuilder: React.FC = () => {
               Save JSON
             </Button>
             <Button
+              onClick={handleLoadJSON}
+              className="w-full bg-[#10b981] hover:bg-[#059669] text-white"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Load JSON
+            </Button>
+            <Button
               onClick={handleTogglePreview}
               variant="outline"
               className="w-full"
@@ -248,16 +279,6 @@ export const LangGraphBuilder: React.FC = () => {
               <Trash2 className="w-4 h-4 mr-2" />
               Clear Canvas
             </Button>
-          </Card>
-
-          <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-            <h4 className="font-semibold text-sm text-blue-900 mb-2">Tips</h4>
-            <ul className="text-xs text-blue-800 space-y-1">
-              <li>• Double-click node titles to rename</li>
-              <li>• Click the dot on edge to add conditions</li>
-              <li>• Drag from node handles to connect</li>
-              <li>• Click expand/collapse to show/hide details</li>
-            </ul>
           </Card>
         </div>
       </div>
@@ -295,6 +316,7 @@ export const LangGraphBuilder: React.FC = () => {
             nodeColor={(node) => {
               if (node.type === 'serviceNode') return '#D71E28';
               if (node.type === 'decisionNode') return '#FFCD41';
+              if (node.type === 'llmNode') return '#10b981';
               return '#9ca3af';
             }}
             className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow"
