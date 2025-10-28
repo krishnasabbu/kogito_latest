@@ -7,7 +7,7 @@ import { LLMNode } from './LLMNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Plus, Download, Trash2, GitBranch, Code, Save, Upload, Play } from 'lucide-react';
+import { Plus, Download, Trash2, GitBranch, Code, Save, Upload, Play, Maximize2, Minimize2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { WorkflowExecuteModal } from './WorkflowExecuteModal';
 
@@ -27,6 +27,7 @@ export const LangGraphBuilder: React.FC = () => {
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [edgeCondition, setEdgeCondition] = useState('');
   const [showExecuteModal, setShowExecuteModal] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const {
     nodes,
@@ -222,16 +223,27 @@ export const LangGraphBuilder: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex bg-light-bg dark:bg-dark-bg">
-      <div className="w-80 border-r border-light-border dark:border-dark-border bg-white dark:bg-dark-surface overflow-y-auto">
+    <div className={`flex bg-light-bg dark:bg-dark-bg ${isFullscreen ? 'fixed inset-0 z-50' : 'h-full'}`}>
+      <div className={`border-r border-light-border dark:border-dark-border bg-white dark:bg-dark-surface overflow-y-auto ${isFullscreen ? 'w-80' : 'w-80'}`}>
         <div className="p-6 space-y-6">
-          <div>
-            <h2 className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2">
-              LangGraph Builder
-            </h2>
-            <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-              Drag and drop nodes to build your workflow
-            </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2">
+                LangGraph Builder
+              </h2>
+              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                Drag and drop nodes to build your workflow
+              </p>
+            </div>
+            <Button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              variant="outline"
+              size="sm"
+              className="p-2"
+              title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </Button>
           </div>
 
           <Card className="p-4 space-y-3 bg-white dark:bg-gray-800">
