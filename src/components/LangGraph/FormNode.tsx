@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
-import { Trash2, ChevronDown, ChevronUp, FileText, Edit } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, FileText, Edit, Eye } from 'lucide-react';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { FormBuilderModal } from './FormBuilderModal';
+import { FormPreviewModal } from './FormPreviewModal';
 
 interface FormNodeProps {
   id: string;
@@ -16,6 +17,7 @@ export const FormNode: React.FC<FormNodeProps> = ({ id, data }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [showFormBuilder, setShowFormBuilder] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const { updateNodeData, deleteNode } = useLangGraphStore();
 
   const handleLabelChange = (newLabel: string) => {
@@ -33,6 +35,11 @@ export const FormNode: React.FC<FormNodeProps> = ({ id, data }) => {
         onClose={() => setShowFormBuilder(false)}
         onSave={handleSaveForm}
         initialSchema={data.formConfig}
+      />
+      <FormPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        formConfig={data.formConfig}
       />
       <div className="bg-white border-2 border-[#10b981] rounded-lg shadow-lg min-w-[280px] hover:shadow-xl transition-all">
         <Handle type="target" position={Position.Left} className="w-3 h-3 bg-[#10b981] border-2 border-white" />
@@ -84,14 +91,23 @@ export const FormNode: React.FC<FormNodeProps> = ({ id, data }) => {
               <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Form Node</div>
             </div>
 
-            <div>
+            <div className="flex gap-2">
               <button
                 onClick={() => setShowFormBuilder(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#10b981] hover:bg-[#059669] text-white rounded-lg transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#10b981] hover:bg-[#059669] text-white rounded-lg transition-colors"
               >
                 <Edit className="w-4 h-4" />
-                {data.formConfig ? 'Edit Form' : 'Create Form'}
+                {data.formConfig ? 'Edit' : 'Create'}
               </button>
+              {data.formConfig && (
+                <button
+                  onClick={() => setShowPreview(true)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#D71E28] hover:bg-[#BB1A21] text-white rounded-lg transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  Preview
+                </button>
+              )}
             </div>
 
             {data.formConfig && (
