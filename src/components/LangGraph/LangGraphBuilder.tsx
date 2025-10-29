@@ -4,6 +4,7 @@ import { useLangGraphStore } from '../../stores/langGraphStore';
 import { ServiceNode } from './ServiceNode';
 import { DecisionNode } from './DecisionNode';
 import { LLMNode } from './LLMNode';
+import { FormNode } from './FormNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -15,6 +16,7 @@ const nodeTypes = {
   serviceNode: ServiceNode,
   decisionNode: DecisionNode,
   llmNode: LLMNode,
+  formNode: FormNode,
 };
 
 const edgeTypes = {
@@ -38,6 +40,7 @@ export const LangGraphBuilder: React.FC = () => {
     addServiceNode,
     addDecisionNode,
     addLLMNode,
+    addFormNode,
     clearCanvas,
     exportJSON,
     importJSON,
@@ -85,6 +88,15 @@ export const LangGraphBuilder: React.FC = () => {
     };
     addLLMNode(position);
     toast.success('LLM node added');
+  };
+
+  const handleAddFormNode = () => {
+    const position = {
+      x: Math.random() * 400 + 100,
+      y: Math.random() * 300 + 100,
+    };
+    addFormNode(position);
+    toast.success('Form node added');
   };
 
   const handleClearCanvas = () => {
@@ -268,6 +280,13 @@ export const LangGraphBuilder: React.FC = () => {
             >
               <Plus className="w-4 h-4 mr-2" />
               LLM Node
+            </Button>
+            <Button
+              onClick={handleAddFormNode}
+              className="w-full bg-[#10b981] hover:bg-[#059669] text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Form Node
             </Button>
           </Card>
 

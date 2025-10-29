@@ -19,7 +19,12 @@ export interface LLMNodeData {
   label: string;
 }
 
-export type NodeData = ServiceNodeData | DecisionNodeData | LLMNodeData;
+export interface FormNodeData {
+  label: string;
+  formConfig: any;
+}
+
+export type NodeData = ServiceNodeData | DecisionNodeData | LLMNodeData | FormNodeData;
 
 export interface LangGraphEdge extends Edge {
   data?: {
@@ -41,6 +46,7 @@ interface LangGraphState {
   addServiceNode: (position: { x: number; y: number }) => void;
   addDecisionNode: (position: { x: number; y: number }) => void;
   addLLMNode: (position: { x: number; y: number }) => void;
+  addFormNode: (position: { x: number; y: number }) => void;
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void;
   deleteNode: (nodeId: string) => void;
   updateEdgeCondition: (edgeId: string, condition: string) => void;
@@ -132,6 +138,20 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
     set({ nodes: [...get().nodes, newNode] });
   },
 
+  addFormNode: (position) => {
+    const id = `form-${nodeIdCounter++}`;
+    const newNode: Node<FormNodeData> = {
+      id,
+      type: 'formNode',
+      position,
+      data: {
+        label: id,
+        formConfig: null,
+      },
+    };
+    set({ nodes: [...get().nodes, newNode] });
+  },
+
   updateNodeData: (nodeId, data) => {
     set({
       nodes: get().nodes.map((node) =>
@@ -174,7 +194,7 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
       graph: {
         nodes: state.nodes.map((node) => ({
           id: node.id,
-          type: node.type === 'serviceNode' ? 'service' : node.type === 'decisionNode' ? 'decision' : 'llm',
+          type: node.type === 'serviceNode' ? 'service' : node.type === 'decisionNode' ? 'decision' : node.type === 'formNode' ? 'form' : 'llm',
           data: node.data,
         })),
         edges: state.edges.map((edge) => ({
@@ -194,7 +214,7 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
       const graph = data.graph || data;
 
       const importedNodes: Node<NodeData>[] = (graph.nodes || []).map((node: any, index: number) => {
-        const nodeType = node.type === 'service' ? 'serviceNode' : node.type === 'decision' ? 'decisionNode' : 'llmNode';
+        const nodeType = node.type === 'service' ? 'serviceNode' : node.type === 'decision' ? 'decisionNode' : node.type === 'form' ? 'formNode' : 'llmNode';
         return {
           id: node.id,
           type: nodeType,
