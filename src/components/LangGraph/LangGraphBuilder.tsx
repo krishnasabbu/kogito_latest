@@ -394,10 +394,37 @@ export const LangGraphBuilder: React.FC = () => {
                 placeholder="Enter context to pass to all nodes"
               />
             </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Input Request
+              </label>
+              <textarea
+                value={inputJSON}
+                onChange={(e) => setInputJSON(e.target.value)}
+                className="w-full h-32 px-3 py-2 text-xs font-mono border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:bg-gray-700 dark:text-white"
+                placeholder='{\n  "message": {}\n}'
+              />
+              <Button
+                onClick={() => {
+                  try {
+                    const parsed = JSON.parse(inputJSON);
+                    setInputs(parsed);
+                    toast.success('Input request updated');
+                  } catch (error) {
+                    toast.error('Invalid JSON format');
+                  }
+                }}
+                className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+                size="sm"
+              >
+                <Save className="w-3 h-3 mr-2" />
+                Save Input Request
+              </Button>
+            </div>
           </Card>
 
           <Card className="p-4 space-y-3">
-            <h3 className="font-semibold text-sm text-gray-900">Actions</h3>
+            <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Actions</h3>
             <Button
               onClick={handleExportJSON}
               className="w-full bg-[#D71E28] hover:bg-[#BB1A21] text-white"
