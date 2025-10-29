@@ -29,6 +29,7 @@ export const LangGraphBuilder: React.FC = () => {
   const { workflowId } = useParams();
   const navigate = useNavigate();
   const [workflowName, setWorkflowName] = useState('');
+  const [workflowContext, setWorkflowContext] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showJSONPreview, setShowJSONPreview] = useState(false);
   const [inputJSON, setInputJSON] = useState('{\n  "message": {}\n}');
@@ -69,6 +70,7 @@ export const LangGraphBuilder: React.FC = () => {
       const workflow = await langGraphService.getWorkflowByName(decodedName);
       if (workflow) {
         setWorkflowName(workflow.name);
+        setWorkflowContext(workflow.context || '');
         if (workflow.data) {
           importJSON(JSON.stringify(workflow.data));
         }
@@ -87,15 +89,20 @@ export const LangGraphBuilder: React.FC = () => {
       return;
     }
 
+    if (!workflowContext.trim()) {
+      toast.error('Please enter workflow context');
+      return;
+    }
+
     try {
       setIsLoading(true);
       const graphData = JSON.parse(exportJSON());
 
       if (workflowId && workflowId !== 'new') {
-        await langGraphService.updateWorkflow(workflowName, graphData);
+        await langGraphService.updateWorkflow(workflowName, workflowContext, graphData);
         toast.success('Workflow updated successfully');
       } else {
-        const newWorkflow = await langGraphService.createWorkflow(workflowName, graphData);
+        const newWorkflow = await langGraphService.createWorkflow(workflowName, workflowContext, graphData);
         toast.success('Workflow created successfully');
         navigate(`/langgraph/builder/${encodeURIComponent(newWorkflow.name)}`, { replace: true });
       }
@@ -282,6 +289,18 @@ export const LangGraphBuilder: React.FC = () => {
                 {workflowId && workflowId !== 'new' && (
                   <p className="text-xs text-gray-500 mt-1">Workflow name cannot be changed</p>
                 )}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Context
+                </label>
+                <textarea
+                  value={workflowContext}
+                  onChange={(e) => setWorkflowContext(e.target.value)}
+                  placeholder="Enter workflow context"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28] resize-none"
+                  rows={3}
+                />
               </div>
               <div className="flex gap-3 justify-end">
                 <Button
