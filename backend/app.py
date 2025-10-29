@@ -2,13 +2,12 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import sqlite3
-from datetime import datetime
 import json
 
 app = FastAPI(title="Flow Store API")
 
 # -------------------------------------------------------------------
-# CORS setup (adjust for your frontend port)
+# CORS setup
 # -------------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
@@ -25,15 +24,23 @@ DB_PATH = "flow.db"
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
+    # Add context column if not exists (for backward compatibility)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS flows (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             version INTEGER NOT NULL,
             data TEXT NOT NULL,
+            context TEXT DEFAULT '{}',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    # Ensure context column exists (for existing tables)
+    try:
+        cur.execute("ALTER TABLE flows ADD COLUMN context TEXT DEFAULT '{}'")
+    except sqlite3.OperationalError:
+        # Column already exists
+        pass
     conn.commit()
     conn.close()
 
@@ -45,6 +52,7 @@ init_db()
 class FlowPayload(BaseModel):
     name: str
     data: dict  # React Flow JSON
+    context: dict = {}  # Global context
 
 # -------------------------------------------------------------------
 # API Endpoints
@@ -56,16 +64,14 @@ def save_flow(payload: FlowPayload):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
-    # Get latest version for same flow name
     cur.execute("SELECT MAX(version) FROM flows WHERE name = ?", (payload.name,))
     result = cur.fetchone()
     latest_version = result[0] if result and result[0] else 0
     new_version = latest_version + 1
 
-    # Store JSON as text
     cur.execute(
-        "INSERT INTO flows (name, version, data) VALUES (?, ?, ?)",
-        (payload.name, new_version, json.dumps(payload.data))
+        "INSERT INTO flows (name, version, data, context) VALUES (?, ?, ?, ?)",
+        (payload.name, new_version, json.dumps(payload.data), json.dumps(payload.context))
     )
     conn.commit()
     conn.close()
@@ -82,7 +88,7 @@ def get_latest_flow(name: str):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute(
-        "SELECT version, data, created_at FROM flows WHERE name = ? ORDER BY version DESC LIMIT 1",
+        "SELECT version, data, context, created_at FROM flows WHERE name = ? ORDER BY version DESC LIMIT 1",
         (name,)
     )
     row = cur.fetchone()
@@ -91,12 +97,13 @@ def get_latest_flow(name: str):
     if not row:
         raise HTTPException(status_code=404, detail="Flow not found")
 
-    version, data, created_at = row
+    version, data, context, created_at = row
     return {
         "name": name,
         "version": version,
         "created_at": created_at,
-        "data": json.loads(data)
+        "data": json.loads(data),
+        "context": json.loads(context) if context else {}
     }
 
 @app.get("/api/flows/{name}/versions")
@@ -114,4 +121,35 @@ def list_flow_versions(name: str):
     return [
         {"version": v, "created_at": ts}
         for v, ts in rows
+    ]
+
+@app.get("/api/flows")
+def list_all_latest_flows():
+    """List all workflows with their latest version, data, and context"""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT f.name, f.version, f.data, f.context, f.created_at
+        FROM flows f
+        INNER JOIN (
+            SELECT name, MAX(version) AS max_version
+            FROM flows
+            GROUP BY name
+        ) latest
+        ON f.name = latest.name AND f.version = latest.max_version
+        ORDER BY f.created_at DESC
+    """)
+    rows = cur.fetchall()
+    conn.close()
+
+    return [
+        {
+            "name": name,
+            "latest_version": version,
+            "created_at": created_at,
+            "data": json.loads(data),
+            "context": json.loads(context) if context else {}
+        }
+        for name, version, data, context, created_at in rows
     ]
