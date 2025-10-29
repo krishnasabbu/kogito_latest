@@ -273,35 +273,10 @@ export const LangGraphBuilder: React.FC = () => {
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               {workflowId && workflowId !== 'new' ? 'Update Workflow' : 'Save Workflow'}
             </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to {workflowId && workflowId !== 'new' ? 'update' : 'save'} this workflow?
+            </p>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Workflow Name
-                </label>
-                <input
-                  type="text"
-                  value={workflowName}
-                  onChange={(e) => setWorkflowName(e.target.value)}
-                  placeholder="Enter workflow name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28]"
-                  disabled={workflowId && workflowId !== 'new'}
-                />
-                {workflowId && workflowId !== 'new' && (
-                  <p className="text-xs text-gray-500 mt-1">Workflow name cannot be changed</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Context
-                </label>
-                <textarea
-                  value={workflowContext}
-                  onChange={(e) => setWorkflowContext(e.target.value)}
-                  placeholder="Enter workflow context"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28] resize-none"
-                  rows={3}
-                />
-              </div>
               <div className="flex gap-3 justify-end">
                 <Button
                   variant="outline"
@@ -388,32 +363,37 @@ export const LangGraphBuilder: React.FC = () => {
           </Card>
 
           <Card className="p-4 space-y-3">
-            <h3 className="font-semibold text-sm text-gray-900">Input Configuration</h3>
-            <p className="text-xs text-gray-600">
-              Define the initial inputs for your workflow
+            <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Input Configuration</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Define workflow name and global context
             </p>
-            <textarea
-              value={inputJSON}
-              onChange={(e) => setInputJSON(e.target.value)}
-              className="w-full h-32 px-3 py-2 text-xs font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              placeholder='{\n  "message": {}\n}'
-            />
-            <Button
-              onClick={() => {
-                try {
-                  const parsed = JSON.parse(inputJSON);
-                  setInputs(parsed);
-                  toast.success('Input configuration updated');
-                } catch (error) {
-                  toast.error('Invalid JSON format');
-                }
-              }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              size="sm"
-            >
-              <Save className="w-3 h-3 mr-2" />
-              Save Input Config
-            </Button>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Workflow Name
+              </label>
+              <input
+                type="text"
+                value={workflowName}
+                onChange={(e) => setWorkflowName(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Enter workflow name"
+                disabled={workflowId && workflowId !== 'new'}
+              />
+              {workflowId && workflowId !== 'new' && (
+                <p className="text-xs text-gray-500 mt-1">Name cannot be changed</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Global Context
+              </label>
+              <textarea
+                value={workflowContext}
+                onChange={(e) => setWorkflowContext(e.target.value)}
+                className="w-full h-24 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:bg-gray-700 dark:text-white"
+                placeholder="Enter context to pass to all nodes"
+              />
+            </div>
           </Card>
 
           <Card className="p-4 space-y-3">
