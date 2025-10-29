@@ -18,7 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const navItems = [
     { path: '/dashboard', label: 'Test Groups', icon: LayoutDashboard },
     { path: '/champion-challenge', label: 'Champion vs Challenge', icon: Trophy },
-    { path: '/langgraph-builder', label: 'LangGraph Builder', icon: GitBranch },
+    { path: '/langgraph', label: 'LangGraph Builder', icon: GitBranch },
   ];
 
   return (

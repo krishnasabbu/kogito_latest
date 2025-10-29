@@ -1,6 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, ConnectionLineType } from 'react-flow-renderer';
 import { useLangGraphStore } from '../../stores/langGraphStore';
+import { langGraphService } from '../../services/langGraphService';
 import { ServiceNode } from './ServiceNode';
 import { DecisionNode } from './DecisionNode';
 import { LLMNode } from './LLMNode';
@@ -8,7 +10,7 @@ import { FormNode } from './FormNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Plus, Download, Trash2, GitBranch, Code, Save, Upload, Play, Maximize2, Minimize2 } from 'lucide-react';
+import { Plus, Download, Trash2, GitBranch, Code, Save, Upload, Play, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { WorkflowExecuteModal } from './WorkflowExecuteModal';
 
@@ -24,12 +26,18 @@ const edgeTypes = {
 };
 
 export const LangGraphBuilder: React.FC = () => {
+  const { workflowId } = useParams();
+  const navigate = useNavigate();
+  const [workflowName, setWorkflowName] = useState('');
+  const [workflowDescription, setWorkflowDescription] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [showJSONPreview, setShowJSONPreview] = useState(false);
   const [inputJSON, setInputJSON] = useState('{\n  "message": {}\n}');
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [edgeCondition, setEdgeCondition] = useState('');
   const [showExecuteModal, setShowExecuteModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   const {
     nodes,
@@ -48,6 +56,58 @@ export const LangGraphBuilder: React.FC = () => {
     updateEdgeCondition,
     setEdges,
   } = useLangGraphStore();
+
+  useEffect(() => {
+    if (workflowId && workflowId !== 'new') {
+      loadWorkflow();
+    }
+  }, [workflowId]);
+
+  const loadWorkflow = async () => {
+    try {
+      setIsLoading(true);
+      const workflow = await langGraphService.getWorkflowById(workflowId!);
+      if (workflow) {
+        setWorkflowName(workflow.name);
+        setWorkflowDescription(workflow.description);
+        if (workflow.graph_data) {
+          importJSON(JSON.stringify(workflow.graph_data));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load workflow:', error);
+      toast.error('Failed to load workflow');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveWorkflow = async () => {
+    if (!workflowName.trim()) {
+      toast.error('Please enter a workflow name');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const graphData = JSON.parse(exportJSON());
+
+      if (workflowId && workflowId !== 'new') {
+        await langGraphService.updateWorkflow(workflowId, workflowName, workflowDescription, graphData);
+        toast.success('Workflow updated successfully');
+      } else {
+        const newWorkflow = await langGraphService.createWorkflow(workflowName, workflowDescription, graphData);
+        toast.success('Workflow created successfully');
+        navigate(`/langgraph/builder/${newWorkflow.id}`, { replace: true });
+      }
+      setShowSaveDialog(false);
+    } catch (error) {
+      console.error('Failed to save workflow:', error);
+      toast.error('Failed to save workflow');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleEdgeButtonClick = useCallback((edge: any) => {
     setSelectedEdge(edge.id);
@@ -152,46 +212,11 @@ export const LangGraphBuilder: React.FC = () => {
   };
 
   const handleExportJSON = async () => {
-    try {
-      const parsedInput = JSON.parse(inputJSON);
-      setInputs(parsedInput);
-    } catch (error) {
-      toast.error('Invalid input JSON format');
+    if (nodes.length === 0) {
+      toast.error('Cannot save an empty graph');
       return;
     }
-
-    const json = exportJSON();
-
-    // Save to API
-    try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        toast.success(`Graph saved successfully! ID: ${result.id}`);
-      } else {
-        toast.error('Failed to save graph to API');
-      }
-    } catch (apiError) {
-      toast.error('API call failed');
-    }
-
-    // Also download locally
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `langgraph-${Date.now()}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setShowSaveDialog(true);
   };
 
   const handleTogglePreview = () => {
@@ -235,18 +260,80 @@ export const LangGraphBuilder: React.FC = () => {
   };
 
   return (
-    <div className={`flex bg-light-bg dark:bg-dark-bg ${isFullscreen ? 'fixed inset-0 z-50' : 'h-full'}`}>
-      <div className={`border-r border-light-border dark:border-dark-border bg-white dark:bg-dark-surface overflow-y-auto ${isFullscreen ? 'w-80' : 'w-80'}`}>
-        <div className="p-6 space-y-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary mb-2">
-                LangGraph Builder
-              </h2>
-              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-                Drag and drop nodes to build your workflow
-              </p>
+    <>
+      {showSaveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              {workflowId && workflowId !== 'new' ? 'Update Workflow' : 'Save Workflow'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Workflow Name
+                </label>
+                <input
+                  type="text"
+                  value={workflowName}
+                  onChange={(e) => setWorkflowName(e.target.value)}
+                  placeholder="Enter workflow name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Description (Optional)
+                </label>
+                <textarea
+                  value={workflowDescription}
+                  onChange={(e) => setWorkflowDescription(e.target.value)}
+                  placeholder="Enter workflow description"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28] resize-none"
+                  rows={3}
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSaveDialog(false)}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveWorkflow}
+                  disabled={isLoading}
+                  className="bg-[#D71E28] hover:bg-[#BB1A21] text-white"
+                >
+                  {isLoading ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
             </div>
+          </div>
+        </div>
+      )}
+      <div className={`flex bg-light-bg dark:bg-dark-bg ${isFullscreen ? 'fixed inset-0 z-50' : 'h-full'}`}>
+        <div className={`border-r border-light-border dark:border-dark-border bg-white dark:bg-dark-surface overflow-y-auto ${isFullscreen ? 'w-80' : 'w-80'}`}>
+          <div className="p-6 space-y-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Button
+                    onClick={() => navigate('/langgraph')}
+                    variant="outline"
+                    size="sm"
+                    className="p-1"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                  <h2 className="text-xl font-bold text-light-text-primary dark:text-dark-text-primary">
+                    {workflowName || 'LangGraph Builder'}
+                  </h2>
+                </div>
+                <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                  Drag and drop nodes to build your workflow
+                </p>
+              </div>
             <Button
               onClick={() => setIsFullscreen(!isFullscreen)}
               variant="outline"
@@ -322,11 +409,11 @@ export const LangGraphBuilder: React.FC = () => {
           <Card className="p-4 space-y-3">
             <h3 className="font-semibold text-sm text-gray-900">Actions</h3>
             <Button
-              onClick={handleSaveJSON}
+              onClick={handleExportJSON}
               className="w-full bg-[#D71E28] hover:bg-[#BB1A21] text-white"
             >
               <Save className="w-4 h-4 mr-2" />
-              Save JSON
+              {workflowId && workflowId !== 'new' ? 'Update Workflow' : 'Save Workflow'}
             </Button>
             <Button
               onClick={handleLoadJSON}
@@ -349,14 +436,6 @@ export const LangGraphBuilder: React.FC = () => {
             >
               <Code className="w-4 h-4 mr-2" />
               {showJSONPreview ? 'Hide' : 'Show'} JSON Preview
-            </Button>
-            <Button
-              onClick={handleExportJSON}
-              variant="outline"
-              className="w-full"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download JSON
             </Button>
             <Button
               onClick={handleClearCanvas}
@@ -503,5 +582,6 @@ export const LangGraphBuilder: React.FC = () => {
         workflowJSON={exportJSON()}
       />
     </div>
+    </>
   );
 };

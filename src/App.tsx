@@ -8,6 +8,7 @@ import { ConfigurationPage } from './components/TestConfiguration/ConfigurationP
 import { MonitoringDashboard } from './components/Monitoring/MonitoringDashboard';
 import { ChampionChallengeApp } from './components/ChampionChallenge/ChampionChallengeApp';
 import { LangGraphBuilder } from './components/LangGraph/LangGraphBuilder';
+import { LangGraphDashboard } from './components/LangGraph/LangGraphDashboard';
 
 function App() {
   return (
@@ -21,7 +22,8 @@ function App() {
             <Route path="/configure/:testId" element={<ConfigurationPage />} />
             <Route path="/monitor/:testId" element={<MonitoringDashboard />} />
             <Route path="/champion-challenge" element={<ChampionChallengeApp />} />
-            <Route path="/langgraph-builder" element={<LangGraphBuilder />} />
+            <Route path="/langgraph" element={<LangGraphDashboard />} />
+            <Route path="/langgraph/builder/:workflowId" element={<LangGraphBuilder />} />
           </Route>
         </Routes>
 
