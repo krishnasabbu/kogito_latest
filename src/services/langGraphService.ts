@@ -1,12 +1,10 @@
 import { supabase } from '../lib/supabaseClient';
 
 export interface LangGraphWorkflow {
-  id: string;
   name: string;
-  description: string;
-  graph_data: any;
+  latest_version: number;
   created_at: string;
-  updated_at: string;
+  data: any;
 }
 
 export const langGraphService = {
@@ -14,31 +12,31 @@ export const langGraphService = {
     const { data, error } = await supabase
       .from('langgraph_workflows')
       .select('*')
-      .order('updated_at', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     return data || [];
   },
 
-  async getWorkflowById(id: string): Promise<LangGraphWorkflow | null> {
+  async getWorkflowByName(name: string): Promise<LangGraphWorkflow | null> {
     const { data, error } = await supabase
       .from('langgraph_workflows')
       .select('*')
-      .eq('id', id)
+      .eq('name', name)
       .maybeSingle();
 
     if (error) throw error;
     return data;
   },
 
-  async createWorkflow(name: string, description: string, graphData: any): Promise<LangGraphWorkflow> {
+  async createWorkflow(name: string, workflowData: any): Promise<LangGraphWorkflow> {
     const { data, error } = await supabase
       .from('langgraph_workflows')
       .insert([
         {
           name,
-          description,
-          graph_data: graphData,
+          latest_version: 1,
+          data: workflowData,
         },
       ])
       .select()
@@ -48,16 +46,17 @@ export const langGraphService = {
     return data;
   },
 
-  async updateWorkflow(id: string, name: string, description: string, graphData: any): Promise<LangGraphWorkflow> {
+  async updateWorkflow(name: string, workflowData: any): Promise<LangGraphWorkflow> {
+    const existing = await this.getWorkflowByName(name);
+    const newVersion = existing ? existing.latest_version + 1 : 1;
+
     const { data, error } = await supabase
       .from('langgraph_workflows')
       .update({
-        name,
-        description,
-        graph_data: graphData,
-        updated_at: new Date().toISOString(),
+        latest_version: newVersion,
+        data: workflowData,
       })
-      .eq('id', id)
+      .eq('name', name)
       .select()
       .single();
 
@@ -65,11 +64,11 @@ export const langGraphService = {
     return data;
   },
 
-  async deleteWorkflow(id: string): Promise<void> {
+  async deleteWorkflow(name: string): Promise<void> {
     const { error } = await supabase
       .from('langgraph_workflows')
       .delete()
-      .eq('id', id);
+      .eq('name', name);
 
     if (error) throw error;
   },

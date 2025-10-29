@@ -29,7 +29,6 @@ export const LangGraphBuilder: React.FC = () => {
   const { workflowId } = useParams();
   const navigate = useNavigate();
   const [workflowName, setWorkflowName] = useState('');
-  const [workflowDescription, setWorkflowDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showJSONPreview, setShowJSONPreview] = useState(false);
   const [inputJSON, setInputJSON] = useState('{\n  "message": {}\n}');
@@ -66,12 +65,12 @@ export const LangGraphBuilder: React.FC = () => {
   const loadWorkflow = async () => {
     try {
       setIsLoading(true);
-      const workflow = await langGraphService.getWorkflowById(workflowId!);
+      const decodedName = decodeURIComponent(workflowId!);
+      const workflow = await langGraphService.getWorkflowByName(decodedName);
       if (workflow) {
         setWorkflowName(workflow.name);
-        setWorkflowDescription(workflow.description);
-        if (workflow.graph_data) {
-          importJSON(JSON.stringify(workflow.graph_data));
+        if (workflow.data) {
+          importJSON(JSON.stringify(workflow.data));
         }
       }
     } catch (error) {
@@ -93,12 +92,12 @@ export const LangGraphBuilder: React.FC = () => {
       const graphData = JSON.parse(exportJSON());
 
       if (workflowId && workflowId !== 'new') {
-        await langGraphService.updateWorkflow(workflowId, workflowName, workflowDescription, graphData);
+        await langGraphService.updateWorkflow(workflowName, graphData);
         toast.success('Workflow updated successfully');
       } else {
-        const newWorkflow = await langGraphService.createWorkflow(workflowName, workflowDescription, graphData);
+        const newWorkflow = await langGraphService.createWorkflow(workflowName, graphData);
         toast.success('Workflow created successfully');
-        navigate(`/langgraph/builder/${newWorkflow.id}`, { replace: true });
+        navigate(`/langgraph/builder/${encodeURIComponent(newWorkflow.name)}`, { replace: true });
       }
       setShowSaveDialog(false);
     } catch (error) {
@@ -278,19 +277,11 @@ export const LangGraphBuilder: React.FC = () => {
                   onChange={(e) => setWorkflowName(e.target.value)}
                   placeholder="Enter workflow name"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28]"
+                  disabled={workflowId && workflowId !== 'new'}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Description (Optional)
-                </label>
-                <textarea
-                  value={workflowDescription}
-                  onChange={(e) => setWorkflowDescription(e.target.value)}
-                  placeholder="Enter workflow description"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D71E28] resize-none"
-                  rows={3}
-                />
+                {workflowId && workflowId !== 'new' && (
+                  <p className="text-xs text-gray-500 mt-1">Workflow name cannot be changed</p>
+                )}
               </div>
               <div className="flex gap-3 justify-end">
                 <Button
