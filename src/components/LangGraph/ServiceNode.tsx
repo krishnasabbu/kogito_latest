@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
 import { Trash2, ChevronDown, ChevronUp, Globe, Settings } from 'lucide-react';
 import { useLangGraphStore } from '../../stores/langGraphStore';
-import { ServiceConfigModal } from './ServiceConfigModal';
+import { ServiceConfigModal, ServiceConfig } from './ServiceConfigModal';
 import { Button } from '../ui/button';
 
 interface ServiceNodeProps {
@@ -11,7 +11,7 @@ interface ServiceNodeProps {
     label: string;
     url: string;
     method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-    request: string;
+    config?: ServiceConfig;
   };
 }
 
@@ -21,8 +21,42 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const { updateNodeData, deleteNode, inputs } = useLangGraphStore();
 
+  const defaultConfig: ServiceConfig = {
+    requestBody: '',
+    headers: [],
+    authType: 'none',
+    authConfig: {},
+    tlsConfig: {
+      enabled: false,
+      verifyCertificate: true,
+    },
+    timeout: 30000,
+    retryConfig: {
+      enabled: false,
+      maxRetries: 3,
+      retryDelay: 1000,
+    },
+  };
+
   const handleLabelChange = (newLabel: string) => {
     updateNodeData(id, { label: newLabel });
+  };
+
+  const getConfigSummary = () => {
+    const config = data.config || defaultConfig;
+    const parts: string[] = [];
+
+    if (config.authType !== 'none') {
+      parts.push(`Auth: ${config.authType}`);
+    }
+    if (config.headers.length > 0) {
+      parts.push(`${config.headers.length} headers`);
+    }
+    if (config.tlsConfig.enabled) {
+      parts.push('TLS enabled');
+    }
+
+    return parts.length > 0 ? parts.join(', ') : 'No configuration';
   };
 
   return (
@@ -102,23 +136,12 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-2">Request Body</label>
-            <div className="relative">
-              <textarea
-                value={data.request}
-                onChange={(e) => updateNodeData(id, { request: e.target.value })}
-                placeholder='{"key": "{{field.name}}"}'
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded font-mono resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#D71E28] focus:border-[#D71E28] bg-gray-50"
-                readOnly
-                onClick={() => setShowConfigModal(true)}
-              />
-              <button
-                onClick={() => setShowConfigModal(true)}
-                className="absolute top-2 right-2 p-1 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-                title="Configure Request"
-              >
-                <Settings className="w-4 h-4 text-gray-600" />
-              </button>
+            <label className="block text-xs font-semibold text-gray-700 mb-2">Configuration</label>
+            <div
+              className="w-full px-3 py-3 text-xs border-2 border-gray-200 rounded bg-gray-50 text-gray-600 cursor-pointer hover:border-[#D71E28] transition-colors"
+              onClick={() => setShowConfigModal(true)}
+            >
+              {getConfigSummary()}
             </div>
           </div>
 
@@ -136,8 +159,8 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
         <ServiceConfigModal
           isOpen={showConfigModal}
           onClose={() => setShowConfigModal(false)}
-          onSave={(requestBody) => updateNodeData(id, { request: requestBody })}
-          initialValue={data.request}
+          onSave={(config) => updateNodeData(id, { config })}
+          initialConfig={data.config || defaultConfig}
           initialInputs={inputs}
         />
       )}
