@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:8080';
+import { supabase } from '../lib/supabaseClient';
 
 export interface LangGraphWorkflow {
   name: string;
@@ -13,8 +11,13 @@ export interface LangGraphWorkflow {
 export const langGraphService = {
   async getAllWorkflows(): Promise<LangGraphWorkflow[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/flows`);
-      return response.data;
+      const { data, error } = await supabase
+        .from('langgraph_workflows')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
     } catch (error) {
       console.error('Error fetching workflows:', error);
       throw error;
@@ -23,8 +26,14 @@ export const langGraphService = {
 
   async getWorkflowByName(name: string): Promise<LangGraphWorkflow | null> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/flows/${encodeURIComponent(name)}`);
-      return response.data;
+      const { data, error } = await supabase
+        .from('langgraph_workflows')
+        .select('*')
+        .eq('name', name)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Error fetching workflow:', error);
       throw error;
@@ -33,12 +42,19 @@ export const langGraphService = {
 
   async createWorkflow(name: string, context: string, workflowData: any): Promise<LangGraphWorkflow> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/flows`, {
-        name,
-        context,
-        data: workflowData,
-      });
-      return response.data;
+      const { data, error } = await supabase
+        .from('langgraph_workflows')
+        .insert({
+          name,
+          context,
+          data: workflowData,
+          latest_version: 1,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Error creating workflow:', error);
       throw error;
@@ -47,12 +63,22 @@ export const langGraphService = {
 
   async updateWorkflow(name: string, context: string, workflowData: any): Promise<LangGraphWorkflow> {
     try {
-      const response = await axios.put(`${API_BASE_URL}/api/flows/${encodeURIComponent(name)}`, {
-        name,
-        context,
-        data: workflowData,
-      });
-      return response.data;
+      const existing = await this.getWorkflowByName(name);
+      const newVersion = existing ? (existing.latest_version || 1) + 1 : 1;
+
+      const { data, error } = await supabase
+        .from('langgraph_workflows')
+        .update({
+          context,
+          data: workflowData,
+          latest_version: newVersion,
+        })
+        .eq('name', name)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Error updating workflow:', error);
       throw error;
@@ -61,7 +87,12 @@ export const langGraphService = {
 
   async deleteWorkflow(name: string): Promise<void> {
     try {
-      await axios.delete(`${API_BASE_URL}/api/flows/${encodeURIComponent(name)}`);
+      const { error } = await supabase
+        .from('langgraph_workflows')
+        .delete()
+        .eq('name', name);
+
+      if (error) throw error;
     } catch (error) {
       console.error('Error deleting workflow:', error);
       throw error;
