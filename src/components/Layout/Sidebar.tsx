@@ -2,10 +2,8 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Workflow,
-  Trophy,
   ChevronLeft,
   ChevronRight,
-  LayoutDashboard,
   GitBranch
 } from 'lucide-react';
 
@@ -16,8 +14,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const navItems = [
-    { path: '/dashboard', label: 'Test Groups', icon: LayoutDashboard },
-    { path: '/champion-challenge', label: 'Champion vs Challenge', icon: Trophy },
     { path: '/langgraph', label: 'LangGraph Builder', icon: GitBranch },
   ];
 

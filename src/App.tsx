@@ -3,10 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout/Layout';
-import { DashboardPage } from './components/Dashboard/DashboardPage';
-import { ConfigurationPage } from './components/TestConfiguration/ConfigurationPage';
-import { MonitoringDashboard } from './components/Monitoring/MonitoringDashboard';
-import { ChampionChallengeApp } from './components/ChampionChallenge/ChampionChallengeApp';
 import { LangGraphBuilder } from './components/LangGraph/LangGraphBuilder';
 import { LangGraphDashboard } from './components/LangGraph/LangGraphDashboard';
 
@@ -16,12 +12,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/configure" element={<ConfigurationPage />} />
-            <Route path="/configure/:testId" element={<ConfigurationPage />} />
-            <Route path="/monitor/:testId" element={<MonitoringDashboard />} />
-            <Route path="/champion-challenge" element={<ChampionChallengeApp />} />
+            <Route index element={<Navigate to="/langgraph" replace />} />
             <Route path="/langgraph" element={<LangGraphDashboard />} />
             <Route path="/langgraph/builder/:workflowId" element={<LangGraphBuilder />} />
           </Route>
