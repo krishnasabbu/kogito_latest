@@ -7,7 +7,6 @@ import { Input } from '../ui/input';
 import { langGraphService, LangGraphWorkflow } from '../../services/langGraphService';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
-import { WorkflowViewModal } from './WorkflowViewModal';
 
 export const LangGraphDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -15,8 +14,6 @@ export const LangGraphDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [selectedWorkflowName, setSelectedWorkflowName] = useState<string | null>(null);
 
   useEffect(() => {
     loadWorkflows();
@@ -44,14 +41,9 @@ export const LangGraphDashboard: React.FC = () => {
   };
 
   const handleView = (workflowName: string) => {
-    setSelectedWorkflowName(workflowName);
-    setViewModalOpen(true);
+    navigate(`/langgraph/builder/${encodeURIComponent(workflowName)}?mode=view`);
   };
 
-  const handleCloseViewModal = () => {
-    setViewModalOpen(false);
-    setSelectedWorkflowName(null);
-  };
 
   const handleDelete = async (workflowName: string) => {
     if (window.confirm(`Are you sure you want to delete "${workflowName}"?`)) {
@@ -321,13 +313,6 @@ export const LangGraphDashboard: React.FC = () => {
         )}
       </div>
 
-      {viewModalOpen && selectedWorkflowName && (
-        <WorkflowViewModal
-          workflowName={selectedWorkflowName}
-          isOpen={viewModalOpen}
-          onClose={handleCloseViewModal}
-        />
-      )}
     </div>
   );
 };

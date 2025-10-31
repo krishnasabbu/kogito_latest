@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, ConnectionLineType } from 'react-flow-renderer';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { langGraphService } from '../../services/langGraphService';
@@ -30,6 +30,8 @@ const edgeTypes = {
 export const LangGraphBuilder: React.FC = () => {
   const { workflowId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isViewMode = searchParams.get('mode') === 'view';
   const [workflowName, setWorkflowName] = useState('');
   const [workflowContext, setWorkflowContext] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -329,8 +331,15 @@ export const LangGraphBuilder: React.FC = () => {
                   </h2>
                 </div>
                 <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
-                  Drag and drop nodes to build your workflow
+                  {isViewMode ? 'View-only mode' : 'Drag and drop nodes to build your workflow'}
                 </p>
+                {isViewMode && (
+                  <div className="mt-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      Read-only
+                    </span>
+                  </div>
+                )}
               </div>
             <Button
               onClick={() => setIsFullscreen(!isFullscreen)}
@@ -343,10 +352,11 @@ export const LangGraphBuilder: React.FC = () => {
             </Button>
           </div>
 
-          <Card className="p-4 space-y-3 bg-white dark:bg-gray-800">
-            <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Add Nodes</h3>
-            <Button
-              onClick={handleAddServiceNode}
+          {!isViewMode && (
+            <Card className="p-4 space-y-3 bg-white dark:bg-gray-800">
+              <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Add Nodes</h3>
+              <Button
+                onClick={handleAddServiceNode}
               className="w-full bg-[#D71E28] hover:bg-[#BB1A21] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -381,6 +391,7 @@ export const LangGraphBuilder: React.FC = () => {
               Workflow Node
             </Button>
           </Card>
+          )}
 
           <Card className="p-4 space-y-3">
             <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Input Configuration</h3>
@@ -397,7 +408,7 @@ export const LangGraphBuilder: React.FC = () => {
                 onChange={(e) => setWorkflowName(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Enter workflow name"
-                disabled={workflowId && workflowId !== 'new'}
+                disabled={workflowId && workflowId !== 'new' || isViewMode}
               />
               {workflowId && workflowId !== 'new' && (
                 <p className="text-xs text-gray-500 mt-1">Name cannot be changed</p>
@@ -412,6 +423,7 @@ export const LangGraphBuilder: React.FC = () => {
                 onChange={(e) => setWorkflowContext(e.target.value)}
                 className="w-full h-24 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:bg-gray-700 dark:text-white"
                 placeholder="Enter context to pass to all nodes"
+                disabled={isViewMode}
               />
             </div>
             <div>
@@ -423,6 +435,7 @@ export const LangGraphBuilder: React.FC = () => {
                 onChange={(e) => setInputJSON(e.target.value)}
                 className="w-full h-32 px-3 py-2 text-xs font-mono border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:bg-gray-700 dark:text-white"
                 placeholder='{\n  "message": {}\n}'
+                disabled={isViewMode}
               />
               <Button
                 onClick={() => {
@@ -445,20 +458,24 @@ export const LangGraphBuilder: React.FC = () => {
 
           <Card className="p-4 space-y-3">
             <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Actions</h3>
-            <Button
-              onClick={handleExportJSON}
-              className="w-full bg-[#D71E28] hover:bg-[#BB1A21] text-white"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {workflowId && workflowId !== 'new' ? 'Update Workflow' : 'Save Workflow'}
-            </Button>
-            <Button
-              onClick={handleLoadJSON}
-              className="w-full bg-[#10b981] hover:bg-[#059669] text-white"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Load JSON
-            </Button>
+            {!isViewMode && (
+              <>
+                <Button
+                  onClick={handleExportJSON}
+                  className="w-full bg-[#D71E28] hover:bg-[#BB1A21] text-white"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {workflowId && workflowId !== 'new' ? 'Update Workflow' : 'Save Workflow'}
+                </Button>
+                <Button
+                  onClick={handleLoadJSON}
+                  className="w-full bg-[#10b981] hover:bg-[#059669] text-white"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Load JSON
+                </Button>
+              </>
+            )}
             <Button
               onClick={handleExecuteWorkflow}
               className="w-full bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-semibold"
@@ -474,14 +491,16 @@ export const LangGraphBuilder: React.FC = () => {
               <Code className="w-4 h-4 mr-2" />
               {showJSONPreview ? 'Hide' : 'Show'} JSON Preview
             </Button>
-            <Button
-              onClick={handleClearCanvas}
-              variant="outline"
-              className="w-full text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear Canvas
-            </Button>
+            {!isViewMode && (
+              <Button
+                onClick={handleClearCanvas}
+                variant="outline"
+                className="w-full text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear Canvas
+              </Button>
+            )}
           </Card>
         </div>
       </div>
@@ -490,10 +509,10 @@ export const LangGraphBuilder: React.FC = () => {
         <ReactFlow
           nodes={nodes}
           edges={edgesWithHandler}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onEdgeClick={handleEdgeClick}
+          onNodesChange={isViewMode ? undefined : onNodesChange}
+          onEdgesChange={isViewMode ? undefined : onEdgesChange}
+          onConnect={isViewMode ? undefined : onConnect}
+          onEdgeClick={isViewMode ? undefined : handleEdgeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultEdgeOptions={{
@@ -504,9 +523,9 @@ export const LangGraphBuilder: React.FC = () => {
           }}
           connectionLineType={ConnectionLineType.SmoothStep}
           connectionLineStyle={{ stroke: '#D71E28', strokeWidth: 2 }}
-          nodesDraggable={true}
-          nodesConnectable={true}
-          elementsSelectable={true}
+          nodesDraggable={!isViewMode}
+          nodesConnectable={!isViewMode}
+          elementsSelectable={!isViewMode}
           fitView
           fitViewOptions={{
             padding: 0.2,
