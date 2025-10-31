@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
-import { Trash2, ChevronDown, ChevronUp, Workflow, ExternalLink, RefreshCw } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, Workflow, ExternalLink, RefreshCw, Settings } from 'lucide-react';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { langGraphService, LangGraphWorkflow } from '../../services/langGraphService';
 import { Button } from '../ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { WorkflowConfigModal } from './WorkflowConfigModal';
 
 interface WorkflowNodeProps {
   id: string;
@@ -14,6 +15,7 @@ interface WorkflowNodeProps {
     selectedWorkflowName?: string;
     dynamicSelection?: boolean;
     workflowFieldPath?: string;
+    requestMapping?: string;
   };
 }
 
@@ -22,8 +24,10 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [workflows, setWorkflows] = useState<LangGraphWorkflow[]>([]);
   const [loading, setLoading] = useState(false);
-  const { updateNodeData, deleteNode } = useLangGraphStore();
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const { updateNodeData, deleteNode, inputs } = useLangGraphStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     loadWorkflows();
@@ -60,10 +64,23 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   const handleNavigateToWorkflow = () => {
     if (data.selectedWorkflowName) {
       const encodedName = encodeURIComponent(data.selectedWorkflowName);
-      navigate(`/langgraph/builder/${encodedName}`);
+      const currentPath = location.pathname;
+      navigate(`/langgraph/builder/${encodedName}`, { state: { returnTo: currentPath } });
     } else {
       toast.error('No workflow selected');
     }
+  };
+
+  const handleConfigureRequest = () => {
+    if (!data.selectedWorkflowName) {
+      toast.error('Please select a workflow first');
+      return;
+    }
+    setShowConfigModal(true);
+  };
+
+  const handleSaveMapping = (mapping: string) => {
+    updateNodeData(id, { requestMapping: mapping });
   };
 
   const selectedWorkflow = workflows.find(w => w.name === data.selectedWorkflowName);
@@ -167,14 +184,36 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
                   <div className="text-xs text-gray-600">
                     <span className="font-semibold">Version:</span> {selectedWorkflow.latest_version}
                   </div>
-                  <Button
-                    onClick={handleNavigateToWorkflow}
-                    className="w-full bg-purple-500 hover:bg-purple-600 text-white text-xs py-2 mt-2"
-                    size="sm"
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      onClick={handleNavigateToWorkflow}
+                      className="flex-1 bg-purple-500 hover:bg-purple-600 text-white text-xs py-2"
+                      size="sm"
+                    >
+                      <ExternalLink className="w-3 h-3 mr-1" />
+                      Open
+                    </Button>
+                    <Button
+                      onClick={handleConfigureRequest}
+                      className="flex-1 bg-purple-500 hover:bg-purple-600 text-white text-xs py-2"
+                      size="sm"
+                    >
+                      <Settings className="w-3 h-3 mr-1" />
+                      Map
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {data.selectedWorkflowName && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-2">Request Mapping</label>
+                  <div
+                    className="w-full px-3 py-3 text-xs border-2 border-gray-200 rounded bg-gray-50 text-gray-600 cursor-pointer hover:border-purple-500 transition-colors font-mono max-h-24 overflow-y-auto"
+                    onClick={handleConfigureRequest}
                   >
-                    <ExternalLink className="w-3 h-3 mr-1" />
-                    Open Workflow
-                  </Button>
+                    {data.requestMapping || 'Click to configure request mapping'}
+                  </div>
                 </div>
               )}
             </>
@@ -204,6 +243,18 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
             </div>
           )}
         </div>
+      )}
+
+      {showConfigModal && data.selectedWorkflowName && (
+        <WorkflowConfigModal
+          isOpen={showConfigModal}
+          onClose={() => setShowConfigModal(false)}
+          onSave={handleSaveMapping}
+          initialValue={data.requestMapping || '{}'}
+          initialInputs={inputs}
+          workflowName={data.selectedWorkflowName}
+          onBack={handleNavigateToWorkflow}
+        />
       )}
     </div>
   );

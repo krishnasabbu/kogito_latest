@@ -29,6 +29,7 @@ export interface WorkflowNodeData {
   selectedWorkflowName?: string;
   dynamicSelection?: boolean;
   workflowFieldPath?: string;
+  requestMapping?: string;
 }
 
 export type NodeData = ServiceNodeData | DecisionNodeData | LLMNodeData | FormNodeData | WorkflowNodeData;
@@ -171,6 +172,7 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
         selectedWorkflowName: undefined,
         dynamicSelection: false,
         workflowFieldPath: undefined,
+        requestMapping: '{}',
       },
     };
     set({ nodes: [...get().nodes, newNode] });

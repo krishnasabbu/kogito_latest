@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, ConnectionLineType } from 'react-flow-renderer';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { langGraphService } from '../../services/langGraphService';
@@ -30,6 +30,7 @@ const edgeTypes = {
 export const LangGraphBuilder: React.FC = () => {
   const { workflowId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [workflowName, setWorkflowName] = useState('');
   const [workflowContext, setWorkflowContext] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +41,8 @@ export const LangGraphBuilder: React.FC = () => {
   const [showExecuteModal, setShowExecuteModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+
+  const returnTo = (location.state as any)?.returnTo;
 
   const {
     nodes,
@@ -316,10 +319,11 @@ export const LangGraphBuilder: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Button
-                    onClick={() => navigate('/langgraph')}
+                    onClick={() => navigate(returnTo || '/langgraph')}
                     variant="outline"
                     size="sm"
                     className="p-1"
+                    title={returnTo ? 'Back to parent workflow' : 'Back to dashboard'}
                   >
                     <ArrowLeft className="w-4 h-4" />
                   </Button>
@@ -327,6 +331,11 @@ export const LangGraphBuilder: React.FC = () => {
                     {workflowName || 'LangGraph Builder'}
                   </h2>
                 </div>
+                {returnTo && (
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">
+                    Nested workflow - click back arrow to return to parent
+                  </p>
+                )}
                 <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
                   Drag and drop nodes to build your workflow
                 </p>
