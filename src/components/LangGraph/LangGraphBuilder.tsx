@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, ConnectionLineType } from 'react-flow-renderer';
 import { useLangGraphStore } from '../../stores/langGraphStore';
@@ -42,6 +42,33 @@ export const LangGraphBuilder: React.FC = () => {
   const [showExecuteModal, setShowExecuteModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const stateSnapshotRef = useRef<any>(null);
+
+  useEffect(() => {
+    stateSnapshotRef.current = {
+      name: workflowName,
+      context: workflowContext,
+      data: nodes.length > 0 ? JSON.parse(exportJSON()) : null,
+      inputJson: inputJSON,
+    };
+  }, [workflowName, workflowContext, nodes, edges, inputJSON]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (stateSnapshotRef.current && workflowId) {
+        sessionStorage.setItem(`workflow-state-${workflowId}`, JSON.stringify(stateSnapshotRef.current));
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (stateSnapshotRef.current && workflowId) {
+        sessionStorage.setItem(`workflow-state-${workflowId}`, JSON.stringify(stateSnapshotRef.current));
+      }
+    };
+  }, [workflowId]);
 
   const {
     nodes,
@@ -63,7 +90,24 @@ export const LangGraphBuilder: React.FC = () => {
   } = useLangGraphStore();
 
   useEffect(() => {
-    if (workflowId && workflowId !== 'new') {
+    const savedState = sessionStorage.getItem(`workflow-state-${workflowId}`);
+    if (savedState) {
+      try {
+        const { name, context, data, inputJson } = JSON.parse(savedState);
+        setWorkflowName(name);
+        setWorkflowContext(context);
+        setInputJSON(inputJson);
+        if (data) {
+          importJSON(JSON.stringify(data));
+        }
+        sessionStorage.removeItem(`workflow-state-${workflowId}`);
+      } catch (error) {
+        console.error('Failed to restore workflow state:', error);
+        if (workflowId && workflowId !== 'new') {
+          loadWorkflow();
+        }
+      }
+    } else if (workflowId && workflowId !== 'new') {
       loadWorkflow();
     }
   }, [workflowId]);
