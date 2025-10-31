@@ -90,6 +90,14 @@ export const LangGraphBuilder: React.FC = () => {
   } = useLangGraphStore();
 
   useEffect(() => {
+    if (workflowId === 'new') {
+      clearCanvas();
+      setWorkflowName('');
+      setWorkflowContext('');
+      setInputJSON('{\n  "message": {}\n}');
+      return;
+    }
+
     const savedState = sessionStorage.getItem(`workflow-state-${workflowId}`);
     if (savedState) {
       try {
