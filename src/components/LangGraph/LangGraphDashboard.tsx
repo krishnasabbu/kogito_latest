@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, LayoutGrid, Table as TableIcon, Search, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, LayoutGrid, Table as TableIcon, Search, Calendar, Eye } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { langGraphService, LangGraphWorkflow } from '../../services/langGraphService';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import { WorkflowViewModal } from './WorkflowViewModal';
 
 export const LangGraphDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export const LangGraphDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedWorkflowName, setSelectedWorkflowName] = useState<string | null>(null);
 
   useEffect(() => {
     loadWorkflows();
@@ -38,6 +41,16 @@ export const LangGraphDashboard: React.FC = () => {
 
   const handleEdit = (workflowName: string) => {
     navigate(`/langgraph/builder/${encodeURIComponent(workflowName)}`);
+  };
+
+  const handleView = (workflowName: string) => {
+    setSelectedWorkflowName(workflowName);
+    setViewModalOpen(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setViewModalOpen(false);
+    setSelectedWorkflowName(null);
   };
 
   const handleDelete = async (workflowName: string) => {
@@ -190,6 +203,14 @@ export const LangGraphDashboard: React.FC = () => {
 
                 <div className="flex gap-2">
                   <Button
+                    onClick={() => handleView(workflow.name)}
+                    variant="outline"
+                    className="flex-1 border-[#D71E28] text-[#D71E28] hover:bg-[#D71E28] hover:text-white"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    View
+                  </Button>
+                  <Button
                     onClick={() => handleEdit(workflow.name)}
                     className="flex-1 bg-[#D71E28] hover:bg-[#BB1A21] text-white"
                   >
@@ -265,6 +286,15 @@ export const LangGraphDashboard: React.FC = () => {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button
+                            onClick={() => handleView(workflow.name)}
+                            size="sm"
+                            variant="outline"
+                            className="border-[#D71E28] text-[#D71E28] hover:bg-[#D71E28] hover:text-white"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                          <Button
                             onClick={() => handleEdit(workflow.name)}
                             size="sm"
                             className="bg-[#D71E28] hover:bg-[#BB1A21] text-white"
@@ -290,6 +320,14 @@ export const LangGraphDashboard: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {viewModalOpen && selectedWorkflowName && (
+        <WorkflowViewModal
+          workflowName={selectedWorkflowName}
+          isOpen={viewModalOpen}
+          onClose={handleCloseViewModal}
+        />
+      )}
     </div>
   );
 };
