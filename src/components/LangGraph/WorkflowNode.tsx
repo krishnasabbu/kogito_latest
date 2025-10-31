@@ -61,7 +61,12 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   };
 
   const handleOpenWorkflow = () => {
+    console.log('handleOpenWorkflow called', {
+      selectedWorkflowName: data.selectedWorkflowName,
+      showViewModal
+    });
     if (data.selectedWorkflowName) {
+      console.log('Setting showViewModal to true');
       setShowViewModal(true);
     } else {
       toast.error('No workflow selected');
@@ -269,11 +274,14 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
       )}
 
       {showViewModal && data.selectedWorkflowName && (
-        <WorkflowViewModal
-          isOpen={showViewModal}
-          onClose={() => setShowViewModal(false)}
-          workflowName={data.selectedWorkflowName}
-        />
+        <>
+          {console.log('Rendering WorkflowViewModal', { showViewModal, workflowName: data.selectedWorkflowName })}
+          <WorkflowViewModal
+            isOpen={showViewModal}
+            onClose={() => setShowViewModal(false)}
+            workflowName={data.selectedWorkflowName}
+          />
+        </>
       )}
     </div>
   );

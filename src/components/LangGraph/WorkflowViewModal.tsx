@@ -68,7 +68,10 @@ export const WorkflowViewModal: React.FC<WorkflowViewModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [workflowContext, setWorkflowContext] = useState('');
 
+  console.log('WorkflowViewModal render', { isOpen, workflowName, nodes: nodes.length });
+
   useEffect(() => {
+    console.log('WorkflowViewModal useEffect', { isOpen, workflowName });
     if (isOpen && workflowName) {
       loadWorkflow();
     }
