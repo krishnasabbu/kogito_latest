@@ -83,12 +83,22 @@ export const WorkflowViewModal: React.FC<WorkflowViewModalProps> = ({
     try {
       setLoading(true);
       const workflow = await langGraphService.getWorkflowByName(workflowName);
+      console.log('Loaded workflow:', workflow);
       if (workflow) {
         setWorkflowContext(workflow.context || '');
         if (workflow.data) {
           const parsedData = typeof workflow.data === 'string' ? JSON.parse(workflow.data) : workflow.data;
-          setNodes(parsedData.nodes || []);
-          setEdges(parsedData.edges || []);
+          console.log('Parsed data:', parsedData);
+
+          if (parsedData.graph) {
+            setNodes(parsedData.graph.nodes || []);
+            setEdges(parsedData.graph.edges || []);
+          } else {
+            setNodes(parsedData.nodes || []);
+            setEdges(parsedData.edges || []);
+          }
+          console.log('Set nodes:', parsedData.graph?.nodes || parsedData.nodes);
+          console.log('Set edges:', parsedData.graph?.edges || parsedData.edges);
         }
       }
     } catch (error) {
