@@ -7,10 +7,11 @@ import { ServiceNode } from './ServiceNode';
 import { DecisionNode } from './DecisionNode';
 import { LLMNode } from './LLMNode';
 import { FormNode } from './FormNode';
+import { WorkflowNode } from './WorkflowNode';
 import { CustomEdge } from './CustomEdge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Plus, Download, Trash2, GitBranch, Code, Save, Upload, Play, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
+import { Plus, Download, Trash2, GitBranch, Code, Save, Upload, Play, Maximize2, Minimize2, ArrowLeft, Workflow } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { WorkflowExecuteModal } from './WorkflowExecuteModal';
 
@@ -19,6 +20,7 @@ const nodeTypes = {
   decisionNode: DecisionNode,
   llmNode: LLMNode,
   formNode: FormNode,
+  workflowNode: WorkflowNode,
 };
 
 const edgeTypes = {
@@ -49,6 +51,7 @@ export const LangGraphBuilder: React.FC = () => {
     addDecisionNode,
     addLLMNode,
     addFormNode,
+    addWorkflowNode,
     clearCanvas,
     exportJSON,
     importJSON,
@@ -163,6 +166,15 @@ export const LangGraphBuilder: React.FC = () => {
     };
     addFormNode(position);
     toast.success('Form node added');
+  };
+
+  const handleAddWorkflowNode = () => {
+    const position = {
+      x: Math.random() * 400 + 100,
+      y: Math.random() * 300 + 100,
+    };
+    addWorkflowNode(position);
+    toast.success('Workflow node added');
   };
 
   const handleClearCanvas = () => {
@@ -359,6 +371,13 @@ export const LangGraphBuilder: React.FC = () => {
             >
               <Plus className="w-4 h-4 mr-2" />
               Form Node
+            </Button>
+            <Button
+              onClick={handleAddWorkflowNode}
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+            >
+              <Workflow className="w-4 h-4 mr-2" />
+              Workflow Node
             </Button>
           </Card>
 

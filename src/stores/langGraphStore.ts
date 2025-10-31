@@ -24,7 +24,14 @@ export interface FormNodeData {
   formConfig: any;
 }
 
-export type NodeData = ServiceNodeData | DecisionNodeData | LLMNodeData | FormNodeData;
+export interface WorkflowNodeData {
+  label: string;
+  selectedWorkflowName?: string;
+  dynamicSelection?: boolean;
+  workflowFieldPath?: string;
+}
+
+export type NodeData = ServiceNodeData | DecisionNodeData | LLMNodeData | FormNodeData | WorkflowNodeData;
 
 export interface LangGraphEdge extends Edge {
   data?: {
@@ -47,6 +54,7 @@ interface LangGraphState {
   addDecisionNode: (position: { x: number; y: number }) => void;
   addLLMNode: (position: { x: number; y: number }) => void;
   addFormNode: (position: { x: number; y: number }) => void;
+  addWorkflowNode: (position: { x: number; y: number }) => void;
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void;
   deleteNode: (nodeId: string) => void;
   updateEdgeCondition: (edgeId: string, condition: string) => void;
@@ -152,6 +160,22 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
     set({ nodes: [...get().nodes, newNode] });
   },
 
+  addWorkflowNode: (position) => {
+    const id = `workflow-${nodeIdCounter++}`;
+    const newNode: Node<WorkflowNodeData> = {
+      id,
+      type: 'workflowNode',
+      position,
+      data: {
+        label: id,
+        selectedWorkflowName: undefined,
+        dynamicSelection: false,
+        workflowFieldPath: undefined,
+      },
+    };
+    set({ nodes: [...get().nodes, newNode] });
+  },
+
   updateNodeData: (nodeId, data) => {
     set({
       nodes: get().nodes.map((node) =>
@@ -192,11 +216,20 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
     const state = get();
     const exportData = {
       graph: {
-        nodes: state.nodes.map((node) => ({
-          id: node.id,
-          type: node.type === 'serviceNode' ? 'service' : node.type === 'decisionNode' ? 'decision' : node.type === 'formNode' ? 'form' : 'llm',
-          data: node.data,
-        })),
+        nodes: state.nodes.map((node) => {
+          let type = 'service';
+          if (node.type === 'serviceNode') type = 'service';
+          else if (node.type === 'decisionNode') type = 'decision';
+          else if (node.type === 'formNode') type = 'form';
+          else if (node.type === 'workflowNode') type = 'workflow';
+          else if (node.type === 'llmNode') type = 'llm';
+
+          return {
+            id: node.id,
+            type,
+            data: node.data,
+          };
+        }),
         edges: state.edges.map((edge) => ({
           source: edge.source,
           target: edge.target,
@@ -214,7 +247,13 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
       const graph = data.graph || data;
 
       const importedNodes: Node<NodeData>[] = (graph.nodes || []).map((node: any, index: number) => {
-        const nodeType = node.type === 'service' ? 'serviceNode' : node.type === 'decision' ? 'decisionNode' : node.type === 'form' ? 'formNode' : 'llmNode';
+        let nodeType = 'serviceNode';
+        if (node.type === 'service') nodeType = 'serviceNode';
+        else if (node.type === 'decision') nodeType = 'decisionNode';
+        else if (node.type === 'form') nodeType = 'formNode';
+        else if (node.type === 'workflow') nodeType = 'workflowNode';
+        else if (node.type === 'llm') nodeType = 'llmNode';
+
         return {
           id: node.id,
           type: nodeType,
