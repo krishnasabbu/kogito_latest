@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
+import { useNavigate } from 'react-router-dom';
 import { Trash2, ChevronDown, ChevronUp, Workflow, ExternalLink, RefreshCw, Settings } from 'lucide-react';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { langGraphService, LangGraphWorkflow } from '../../services/langGraphService';
 import { Button } from '../ui/button';
 import toast from 'react-hot-toast';
 import { WorkflowConfigModal, WorkflowConfig } from './WorkflowConfigModal';
-import { WorkflowViewModal } from './WorkflowViewModal';
 
 interface WorkflowNodeProps {
   id: string;
@@ -20,12 +20,12 @@ interface WorkflowNodeProps {
 }
 
 export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [workflows, setWorkflows] = useState<LangGraphWorkflow[]>([]);
   const [loading, setLoading] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
   const { updateNodeData, deleteNode, inputs } = useLangGraphStore();
 
   useEffect(() => {
@@ -63,13 +63,8 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   };
 
   const handleOpenWorkflow = () => {
-    console.log('handleOpenWorkflow called', {
-      selectedWorkflowName: data.selectedWorkflowName,
-      showViewModal
-    });
     if (data.selectedWorkflowName) {
-      console.log('Setting showViewModal to true');
-      setShowViewModal(true);
+      navigate(`/langgraph/builder/${encodeURIComponent(data.selectedWorkflowName)}?mode=view`);
     } else {
       toast.error('No workflow selected');
     }
@@ -95,12 +90,6 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   };
 
   const selectedWorkflow = workflows.find(w => w.name === data.selectedWorkflowName);
-  console.log('WorkflowNode render', {
-    workflows: workflows.length,
-    selectedWorkflowName: data.selectedWorkflowName,
-    selectedWorkflow: selectedWorkflow?.name,
-    showViewModal
-  });
 
   return (
     <div className="bg-white border-2 border-purple-500 rounded-lg shadow-lg min-w-[280px] hover:shadow-xl transition-all">
@@ -281,16 +270,6 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
         />
       )}
 
-      {showViewModal && data.selectedWorkflowName && (
-        <>
-          {console.log('Rendering WorkflowViewModal', { showViewModal, workflowName: data.selectedWorkflowName })}
-          <WorkflowViewModal
-            isOpen={showViewModal}
-            onClose={() => setShowViewModal(false)}
-            workflowName={data.selectedWorkflowName}
-          />
-        </>
-      )}
     </div>
   );
 };
