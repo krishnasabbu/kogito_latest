@@ -36,6 +36,7 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
     try {
       setLoading(true);
       const allWorkflows = await langGraphService.getAllWorkflows();
+      console.log('Loaded workflows:', allWorkflows);
       setWorkflows(allWorkflows);
     } catch (error) {
       console.error('Failed to load workflows:', error);
@@ -50,6 +51,7 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   };
 
   const handleWorkflowChange = (workflowName: string) => {
+    console.log('Workflow changed to:', workflowName);
     updateNodeData(id, { selectedWorkflowName: workflowName });
   };
 
@@ -93,6 +95,12 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   };
 
   const selectedWorkflow = workflows.find(w => w.name === data.selectedWorkflowName);
+  console.log('WorkflowNode render', {
+    workflows: workflows.length,
+    selectedWorkflowName: data.selectedWorkflowName,
+    selectedWorkflow: selectedWorkflow?.name,
+    showViewModal
+  });
 
   return (
     <div className="bg-white border-2 border-purple-500 rounded-lg shadow-lg min-w-[280px] hover:shadow-xl transition-all">
