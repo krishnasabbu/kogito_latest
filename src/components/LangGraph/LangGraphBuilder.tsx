@@ -90,34 +90,40 @@ export const LangGraphBuilder: React.FC = () => {
   } = useLangGraphStore();
 
   useEffect(() => {
-    if (workflowId === 'new') {
-      clearCanvas();
-      setWorkflowName('');
-      setWorkflowContext('');
-      setInputJSON('{\n  "message": {}\n}');
-      return;
-    }
-
-    const savedState = sessionStorage.getItem(`workflow-state-${workflowId}`);
-    if (savedState) {
-      try {
-        const { name, context, data, inputJson } = JSON.parse(savedState);
-        setWorkflowName(name);
-        setWorkflowContext(context);
-        setInputJSON(inputJson);
-        if (data) {
-          importJSON(JSON.stringify(data));
-        }
-        sessionStorage.removeItem(`workflow-state-${workflowId}`);
-      } catch (error) {
-        console.error('Failed to restore workflow state:', error);
-        if (workflowId && workflowId !== 'new') {
-          loadWorkflow();
-        }
+    const initializeWorkflow = async () => {
+      if (workflowId === 'new') {
+        clearCanvas();
+        setWorkflowName('');
+        setWorkflowContext('');
+        setInputJSON('{\n  "message": {}\n}');
+        setIsLoading(false);
+        return;
       }
-    } else if (workflowId && workflowId !== 'new') {
-      loadWorkflow();
-    }
+
+      const savedState = sessionStorage.getItem(`workflow-state-${workflowId}`);
+      if (savedState) {
+        try {
+          const { name, context, data, inputJson } = JSON.parse(savedState);
+          setWorkflowName(name);
+          setWorkflowContext(context);
+          setInputJSON(inputJson);
+          if (data) {
+            importJSON(JSON.stringify(data));
+          }
+          sessionStorage.removeItem(`workflow-state-${workflowId}`);
+          setIsLoading(false);
+        } catch (error) {
+          console.error('Failed to restore workflow state:', error);
+          if (workflowId && workflowId !== 'new') {
+            await loadWorkflow();
+          }
+        }
+      } else if (workflowId && workflowId !== 'new') {
+        await loadWorkflow();
+      }
+    };
+
+    initializeWorkflow();
   }, [workflowId]);
 
   const loadWorkflow = async () => {
