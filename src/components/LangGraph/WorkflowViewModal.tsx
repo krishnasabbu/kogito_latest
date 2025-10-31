@@ -63,12 +63,13 @@ export const WorkflowViewModal: React.FC<WorkflowViewModalProps> = ({
   onClose,
   workflowName,
 }) => {
+  const [componentId] = useState(() => Math.random().toString(36).substr(2, 9));
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [loading, setLoading] = useState(false);
   const [workflowContext, setWorkflowContext] = useState('');
 
-  console.log('WorkflowViewModal render', { isOpen, workflowName, nodes: nodes.length });
+  console.log(`[${componentId}] WorkflowViewModal render`, { isOpen, workflowName, nodes: nodes.length });
 
   useEffect(() => {
     console.log('WorkflowViewModal useEffect', { isOpen, workflowName });
@@ -98,12 +99,14 @@ export const WorkflowViewModal: React.FC<WorkflowViewModalProps> = ({
     }
   };
 
+  console.log(`[${componentId}] Before isOpen check`, { isOpen });
+
   if (!isOpen) {
-    console.log('isOpen is false, returning null');
+    console.log(`[${componentId}] isOpen is false, returning null`);
     return null;
   }
 
-  console.log('Creating modal content - about to render portal');
+  console.log(`[${componentId}] Creating modal content - about to render portal`);
 
   const modalContent = (
     <div className="fixed inset-0 bg-black bg-opacity-70" style={{ zIndex: 99999 }}>
@@ -174,5 +177,6 @@ export const WorkflowViewModal: React.FC<WorkflowViewModalProps> = ({
     </div>
   );
 
+  console.log(`[${componentId}] Returning portal to document.body`);
   return createPortal(modalContent, document.body);
 };
