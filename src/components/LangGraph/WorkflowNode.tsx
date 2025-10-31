@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position } from 'react-flow-renderer';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Trash2, ChevronDown, ChevronUp, Workflow, ExternalLink, RefreshCw, Settings } from 'lucide-react';
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { langGraphService, LangGraphWorkflow } from '../../services/langGraphService';
@@ -21,7 +21,6 @@ interface WorkflowNodeProps {
 
 export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   const navigate = useNavigate();
-  const { workflowId } = useParams();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [workflows, setWorkflows] = useState<LangGraphWorkflow[]>([]);
@@ -65,7 +64,7 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
 
   const handleOpenWorkflow = () => {
     if (data.selectedWorkflowName) {
-      navigate(`/langgraph/builder/${encodeURIComponent(data.selectedWorkflowName)}?mode=view`);
+      window.open(`/langgraph/builder/${encodeURIComponent(data.selectedWorkflowName)}?mode=view`, '_blank');
     } else {
       toast.error('No workflow selected');
     }
