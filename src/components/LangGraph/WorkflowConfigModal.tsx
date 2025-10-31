@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ArrowLeft } from 'lucide-react';
+import { X, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
+
+export interface WorkflowConfig {
+  url: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  requestMapping: string;
+  headers: Array<{ key: string; value: string }>;
+}
 
 interface WorkflowConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (requestMapping: string) => void;
-  initialValue: string;
+  onSave: (config: WorkflowConfig) => void;
+  initialConfig: WorkflowConfig;
   initialInputs: Record<string, any>;
   workflowName: string;
   onBack: () => void;
@@ -17,19 +24,20 @@ export const WorkflowConfigModal: React.FC<WorkflowConfigModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  initialValue,
+  initialConfig,
   initialInputs,
   workflowName,
   onBack,
 }) => {
-  const [requestMapping, setRequestMapping] = useState(initialValue || '{}');
+  const [config, setConfig] = useState<WorkflowConfig>(initialConfig);
   const [draggedField, setDraggedField] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'request' | 'headers'>('request');
 
   useEffect(() => {
     if (isOpen) {
-      setRequestMapping(initialValue || '{}');
+      setConfig(initialConfig);
     }
-  }, [isOpen, initialValue]);
+  }, [isOpen, initialConfig]);
 
   if (!isOpen) return null;
 
@@ -59,10 +67,10 @@ export const WorkflowConfigModal: React.FC<WorkflowConfigModalProps> = ({
     e.preventDefault();
     if (draggedField) {
       const cursorPosition = (e.target as HTMLTextAreaElement).selectionStart || 0;
-      const textBefore = requestMapping.substring(0, cursorPosition);
-      const textAfter = requestMapping.substring(cursorPosition);
+      const textBefore = config.requestMapping.substring(0, cursorPosition);
+      const textAfter = config.requestMapping.substring(cursorPosition);
       const newText = `${textBefore}{${draggedField}}${textAfter}`;
-      setRequestMapping(newText);
+      setConfig({ ...config, requestMapping: newText });
     }
   };
 
@@ -70,8 +78,28 @@ export const WorkflowConfigModal: React.FC<WorkflowConfigModalProps> = ({
     e.preventDefault();
   };
 
+  const addHeader = () => {
+    setConfig({
+      ...config,
+      headers: [...config.headers, { key: '', value: '' }],
+    });
+  };
+
+  const removeHeader = (index: number) => {
+    setConfig({
+      ...config,
+      headers: config.headers.filter((_, i) => i !== index),
+    });
+  };
+
+  const updateHeader = (index: number, field: 'key' | 'value', value: string) => {
+    const newHeaders = [...config.headers];
+    newHeaders[index][field] = value;
+    setConfig({ ...config, headers: newHeaders });
+  };
+
   const handleSave = () => {
-    onSave(requestMapping);
+    onSave(config);
     onClose();
   };
 
@@ -101,9 +129,9 @@ export const WorkflowConfigModal: React.FC<WorkflowConfigModalProps> = ({
         </div>
 
         <div className="flex-1 flex overflow-hidden">
-          <div className="w-1/3 border-r border-gray-200 p-6 overflow-y-auto bg-gray-50">
+          <div className="w-1/4 border-r border-gray-200 p-6 overflow-y-auto bg-gray-50">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Available Fields</h3>
-            <p className="text-sm text-gray-600 mb-6">Drag fields to the JSON template on the right</p>
+            <p className="text-sm text-gray-600 mb-6">Drag fields to the inputs on the right</p>
             <div className="space-y-3">
               {fieldPaths.map((field) => (
                 <div
@@ -111,7 +139,7 @@ export const WorkflowConfigModal: React.FC<WorkflowConfigModalProps> = ({
                   draggable
                   onDragStart={() => handleDragStart(field)}
                   onDragEnd={handleDragEnd}
-                  className="bg-white border-2 border-gray-300 rounded-lg px-4 py-3 text-base font-mono cursor-move hover:bg-purple-50 hover:border-purple-500 transition-all shadow-md hover:shadow-lg"
+                  className="bg-white border-2 border-gray-300 rounded-lg px-4 py-3 text-sm font-mono cursor-move hover:bg-purple-50 hover:border-purple-500 transition-all shadow-md hover:shadow-lg"
                 >
                   {field}
                 </div>
@@ -119,19 +147,114 @@ export const WorkflowConfigModal: React.FC<WorkflowConfigModalProps> = ({
             </div>
           </div>
 
-          <div className="flex-1 p-6 flex flex-col">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Request Mapping</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Map input fields to the workflow's expected input format. Use single braces {'{'} and {'}'} to wrap field references.
-            </p>
-            <textarea
-              value={requestMapping}
-              onChange={(e) => setRequestMapping(e.target.value)}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              className="flex-1 w-full px-6 py-4 text-base font-mono border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white resize-none"
-              placeholder='{\n  "input": {\n    "message": "{input.data}"\n  }\n}'
-            />
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex gap-2 mb-6 border-b border-gray-200">
+              {(['request', 'headers'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 font-semibold text-sm capitalize transition-colors ${
+                    activeTab === tab
+                      ? 'text-purple-500 border-b-2 border-purple-500'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === 'request' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Workflow URL</label>
+                  <input
+                    type="text"
+                    value={config.url}
+                    onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                    placeholder="https://api.example.com/workflow or leave empty for internal"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Optional: External API endpoint. Leave empty to execute internal workflow.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Method</label>
+                  <select
+                    value={config.method}
+                    onChange={(e) => setConfig({ ...config, method: e.target.value as any })}
+                    className="w-full px-3 py-2 text-sm border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 font-semibold transition-all"
+                  >
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                  </select>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">Request Body Mapping</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Map input fields to the workflow's expected input format. Use single braces {'{'} and {'}'} to wrap field references.
+                  </p>
+                  <textarea
+                    value={config.requestMapping}
+                    onChange={(e) => setConfig({ ...config, requestMapping: e.target.value })}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    className="w-full h-96 px-6 py-4 text-base font-mono border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white resize-none"
+                    placeholder='{\n  "input": {\n    "message": "{input.data}"\n  }\n}'
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'headers' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-gray-800">HTTP Headers</h3>
+                  <Button
+                    onClick={addHeader}
+                    className="bg-[#10b981] hover:bg-[#059669] text-white"
+                    size="sm"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Header
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {config.headers.map((header, index) => (
+                    <div key={index} className="flex gap-3 items-center">
+                      <input
+                        type="text"
+                        placeholder="Header Name"
+                        value={header.key}
+                        onChange={(e) => updateHeader(index, 'key', e.target.value)}
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Header Value"
+                        value={header.value}
+                        onChange={(e) => updateHeader(index, 'value', e.target.value)}
+                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <button
+                        onClick={() => removeHeader(index)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {config.headers.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No headers added yet</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -143,7 +266,7 @@ export const WorkflowConfigModal: React.FC<WorkflowConfigModalProps> = ({
             onClick={handleSave}
             className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 text-base"
           >
-            Save Mapping
+            Save Configuration
           </Button>
         </div>
       </div>

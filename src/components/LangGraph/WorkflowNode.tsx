@@ -6,7 +6,7 @@ import { langGraphService, LangGraphWorkflow } from '../../services/langGraphSer
 import { Button } from '../ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { WorkflowConfigModal } from './WorkflowConfigModal';
+import { WorkflowConfigModal, WorkflowConfig } from './WorkflowConfigModal';
 
 interface WorkflowNodeProps {
   id: string;
@@ -15,7 +15,7 @@ interface WorkflowNodeProps {
     selectedWorkflowName?: string;
     dynamicSelection?: boolean;
     workflowFieldPath?: string;
-    requestMapping?: string;
+    workflowConfig?: WorkflowConfig;
   };
 }
 
@@ -65,10 +65,21 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
     if (data.selectedWorkflowName) {
       const encodedName = encodeURIComponent(data.selectedWorkflowName);
       const currentPath = location.pathname;
-      navigate(`/langgraph/builder/${encodedName}`, { state: { returnTo: currentPath } });
+
+      navigate(`/langgraph/builder/${encodedName}`, {
+        state: { returnTo: currentPath },
+        replace: false
+      });
     } else {
       toast.error('No workflow selected');
     }
+  };
+
+  const defaultConfig: WorkflowConfig = {
+    url: '',
+    method: 'POST',
+    requestMapping: '{}',
+    headers: [],
   };
 
   const handleConfigureRequest = () => {
@@ -79,8 +90,8 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
     setShowConfigModal(true);
   };
 
-  const handleSaveMapping = (mapping: string) => {
-    updateNodeData(id, { requestMapping: mapping });
+  const handleSaveConfig = (config: WorkflowConfig) => {
+    updateNodeData(id, { workflowConfig: config });
   };
 
   const selectedWorkflow = workflows.find(w => w.name === data.selectedWorkflowName);
@@ -207,12 +218,19 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
 
               {data.selectedWorkflowName && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-2">Request Mapping</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-2">Configuration</label>
                   <div
-                    className="w-full px-3 py-3 text-xs border-2 border-gray-200 rounded bg-gray-50 text-gray-600 cursor-pointer hover:border-purple-500 transition-colors font-mono max-h-24 overflow-y-auto"
+                    className="w-full px-3 py-3 text-xs border-2 border-gray-200 rounded bg-gray-50 text-gray-600 cursor-pointer hover:border-purple-500 transition-colors space-y-1"
                     onClick={handleConfigureRequest}
                   >
-                    {data.requestMapping || 'Click to configure request mapping'}
+                    <div><span className="font-semibold">Method:</span> {data.workflowConfig?.method || 'POST'}</div>
+                    {data.workflowConfig?.url && (
+                      <div className="font-mono text-xs truncate">
+                        <span className="font-semibold">URL:</span> {data.workflowConfig.url}
+                      </div>
+                    )}
+                    <div><span className="font-semibold">Headers:</span> {data.workflowConfig?.headers?.length || 0}</div>
+                    <div className="text-gray-500 italic">Click to configure</div>
                   </div>
                 </div>
               )}
@@ -249,8 +267,8 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
         <WorkflowConfigModal
           isOpen={showConfigModal}
           onClose={() => setShowConfigModal(false)}
-          onSave={handleSaveMapping}
-          initialValue={data.requestMapping || '{}'}
+          onSave={handleSaveConfig}
+          initialConfig={data.workflowConfig || defaultConfig}
           initialInputs={inputs}
           workflowName={data.selectedWorkflowName}
           onBack={handleNavigateToWorkflow}

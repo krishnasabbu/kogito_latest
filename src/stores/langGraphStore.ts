@@ -29,7 +29,12 @@ export interface WorkflowNodeData {
   selectedWorkflowName?: string;
   dynamicSelection?: boolean;
   workflowFieldPath?: string;
-  requestMapping?: string;
+  workflowConfig?: {
+    url: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    requestMapping: string;
+    headers: Array<{ key: string; value: string }>;
+  };
 }
 
 export type NodeData = ServiceNodeData | DecisionNodeData | LLMNodeData | FormNodeData | WorkflowNodeData;
@@ -172,7 +177,12 @@ export const useLangGraphStore = create<LangGraphState>((set, get) => ({
         selectedWorkflowName: undefined,
         dynamicSelection: false,
         workflowFieldPath: undefined,
-        requestMapping: '{}',
+        workflowConfig: {
+          url: '',
+          method: 'POST',
+          requestMapping: '{}',
+          headers: [],
+        },
       },
     };
     set({ nodes: [...get().nodes, newNode] });
