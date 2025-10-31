@@ -78,6 +78,7 @@ export const WorkflowViewModal: React.FC<WorkflowViewModalProps> = ({
   }, [isOpen, workflowName]);
 
   const loadWorkflow = async () => {
+    console.log('loadWorkflow called');
     try {
       setLoading(true);
       const workflow = await langGraphService.getWorkflowByName(workflowName);
@@ -97,10 +98,15 @@ export const WorkflowViewModal: React.FC<WorkflowViewModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    console.log('isOpen is false, returning null');
+    return null;
+  }
+
+  console.log('Creating modal content - about to render portal');
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black bg-opacity-70 z-[9999]">
+    <div className="fixed inset-0 bg-black bg-opacity-70" style={{ zIndex: 99999 }}>
       <div className="bg-white w-full h-full flex flex-col">
         <div className="bg-purple-500 text-white px-8 py-6 flex items-center justify-between">
           <div>
