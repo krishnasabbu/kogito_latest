@@ -3,24 +3,53 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import ReactFlow, { Background, Controls, MiniMap, BackgroundVariant, Node, Edge } from 'react-flow-renderer';
 import { langGraphService } from '../../services/langGraphService';
-import { ServiceNode } from './ServiceNode';
-import { DecisionNode } from './DecisionNode';
-import { LLMNode } from './LLMNode';
-import { FormNode } from './FormNode';
-import { WorkflowNode } from './WorkflowNode';
-import { CustomEdge } from './CustomEdge';
 import toast from 'react-hot-toast';
 
-const nodeTypes = {
-  serviceNode: ServiceNode,
-  decisionNode: DecisionNode,
-  llmNode: LLMNode,
-  formNode: FormNode,
-  workflowNode: WorkflowNode,
-};
+const ReadOnlyServiceNode = ({ data }: any) => (
+  <div className="bg-blue-500 text-white rounded-lg px-4 py-3 min-w-[200px] shadow-lg border-2 border-blue-600">
+    <div className="font-semibold text-sm">{data.label}</div>
+    <div className="text-xs mt-1 opacity-90">{data.method || 'GET'}</div>
+    {data.url && <div className="text-xs mt-1 truncate opacity-75">{data.url}</div>}
+  </div>
+);
 
-const edgeTypes = {
-  custom: CustomEdge,
+const ReadOnlyDecisionNode = ({ data }: any) => (
+  <div className="bg-amber-500 text-white rounded-lg px-4 py-3 min-w-[200px] shadow-lg border-2 border-amber-600">
+    <div className="font-semibold text-sm">{data.label}</div>
+    <div className="text-xs mt-1 opacity-90">Decision</div>
+  </div>
+);
+
+const ReadOnlyLLMNode = ({ data }: any) => (
+  <div className="bg-emerald-500 text-white rounded-lg px-4 py-3 min-w-[200px] shadow-lg border-2 border-emerald-600">
+    <div className="font-semibold text-sm">{data.label}</div>
+    <div className="text-xs mt-1 opacity-90">LLM</div>
+  </div>
+);
+
+const ReadOnlyFormNode = ({ data }: any) => (
+  <div className="bg-pink-500 text-white rounded-lg px-4 py-3 min-w-[200px] shadow-lg border-2 border-pink-600">
+    <div className="font-semibold text-sm">{data.label}</div>
+    <div className="text-xs mt-1 opacity-90">Form</div>
+  </div>
+);
+
+const ReadOnlyWorkflowNode = ({ data }: any) => (
+  <div className="bg-purple-500 text-white rounded-lg px-4 py-3 min-w-[200px] shadow-lg border-2 border-purple-600">
+    <div className="font-semibold text-sm">{data.label}</div>
+    <div className="text-xs mt-1 opacity-90">Workflow</div>
+    {data.selectedWorkflowName && (
+      <div className="text-xs mt-1 opacity-75">{data.selectedWorkflowName}</div>
+    )}
+  </div>
+);
+
+const nodeTypes = {
+  serviceNode: ReadOnlyServiceNode,
+  decisionNode: ReadOnlyDecisionNode,
+  llmNode: ReadOnlyLLMNode,
+  formNode: ReadOnlyFormNode,
+  workflowNode: ReadOnlyWorkflowNode,
 };
 
 interface WorkflowViewModalProps {
@@ -99,7 +128,6 @@ export const WorkflowViewModal: React.FC<WorkflowViewModalProps> = ({
               nodes={nodes}
               edges={edges}
               nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
               nodesDraggable={false}
               nodesConnectable={false}
               elementsSelectable={false}
