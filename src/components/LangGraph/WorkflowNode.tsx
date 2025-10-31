@@ -4,9 +4,9 @@ import { Trash2, ChevronDown, ChevronUp, Workflow, ExternalLink, RefreshCw, Sett
 import { useLangGraphStore } from '../../stores/langGraphStore';
 import { langGraphService, LangGraphWorkflow } from '../../services/langGraphService';
 import { Button } from '../ui/button';
-import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { WorkflowConfigModal, WorkflowConfig } from './WorkflowConfigModal';
+import { WorkflowViewModal } from './WorkflowViewModal';
 
 interface WorkflowNodeProps {
   id: string;
@@ -25,9 +25,8 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
   const [workflows, setWorkflows] = useState<LangGraphWorkflow[]>([]);
   const [loading, setLoading] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const { updateNodeData, deleteNode, inputs } = useLangGraphStore();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     loadWorkflows();
@@ -61,23 +60,9 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
     }
   };
 
-  const handleNavigateToWorkflow = () => {
+  const handleOpenWorkflow = () => {
     if (data.selectedWorkflowName) {
-      const encodedName = encodeURIComponent(data.selectedWorkflowName);
-      const currentPath = location.pathname;
-
-      console.log('Navigating to workflow:', {
-        from: currentPath,
-        to: `/langgraph/builder/${encodedName}`,
-        workflowName: data.selectedWorkflowName
-      });
-
-      navigate(`/langgraph/builder/${encodedName}`, {
-        state: { returnTo: currentPath },
-        replace: false
-      });
-
-      toast.success(`Opening workflow: ${data.selectedWorkflowName}`);
+      setShowViewModal(true);
     } else {
       toast.error('No workflow selected');
     }
@@ -205,12 +190,12 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
                   </div>
                   <div className="flex gap-2 mt-2">
                     <Button
-                      onClick={handleNavigateToWorkflow}
+                      onClick={handleOpenWorkflow}
                       className="flex-1 bg-purple-500 hover:bg-purple-600 text-white text-xs py-2"
                       size="sm"
                     >
                       <ExternalLink className="w-3 h-3 mr-1" />
-                      Open
+                      View
                     </Button>
                     <Button
                       onClick={handleConfigureRequest}
@@ -279,7 +264,15 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
           initialConfig={data.workflowConfig || defaultConfig}
           initialInputs={inputs}
           workflowName={data.selectedWorkflowName}
-          onBack={handleNavigateToWorkflow}
+          onBack={handleOpenWorkflow}
+        />
+      )}
+
+      {showViewModal && data.selectedWorkflowName && (
+        <WorkflowViewModal
+          isOpen={showViewModal}
+          onClose={() => setShowViewModal(false)}
+          workflowName={data.selectedWorkflowName}
         />
       )}
     </div>
