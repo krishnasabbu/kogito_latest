@@ -69,6 +69,19 @@ export const LangGraphBuilder: React.FC = () => {
     }
   }, [workflowId]);
 
+  useEffect(() => {
+    console.log('Navigation state:', { returnTo, pathname: location.pathname, state: location.state });
+  }, [location]);
+
+  const handleBackNavigation = () => {
+    console.log('Back button clicked, returnTo:', returnTo);
+    if (returnTo) {
+      navigate(returnTo, { replace: false });
+    } else {
+      navigate('/langgraph', { replace: false });
+    }
+  };
+
   const loadWorkflow = async () => {
     try {
       setIsLoading(true);
@@ -319,7 +332,7 @@ export const LangGraphBuilder: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Button
-                    onClick={() => navigate(returnTo || '/langgraph')}
+                    onClick={handleBackNavigation}
                     variant="outline"
                     size="sm"
                     className="p-1"

@@ -66,10 +66,18 @@ export const WorkflowNode: React.FC<WorkflowNodeProps> = ({ id, data }) => {
       const encodedName = encodeURIComponent(data.selectedWorkflowName);
       const currentPath = location.pathname;
 
+      console.log('Navigating to workflow:', {
+        from: currentPath,
+        to: `/langgraph/builder/${encodedName}`,
+        workflowName: data.selectedWorkflowName
+      });
+
       navigate(`/langgraph/builder/${encodedName}`, {
         state: { returnTo: currentPath },
         replace: false
       });
+
+      toast.success(`Opening workflow: ${data.selectedWorkflowName}`);
     } else {
       toast.error('No workflow selected');
     }
