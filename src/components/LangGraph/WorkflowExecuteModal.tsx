@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import ReactFlow, { Node, Edge, Background, Controls, MiniMap, BackgroundVariant } from 'react-flow-renderer';
+import ReactFlow, { Node, Edge, Background, Controls, MiniMap, BackgroundVariant, Handle, Position } from 'react-flow-renderer';
 
 interface WorkflowExecuteModalProps {
   isOpen: boolean;
@@ -195,19 +195,23 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
     };
 
     return (
-      <div className={`px-4 py-3 rounded-lg border-2 shadow-lg min-w-[180px] transition-all hover:shadow-xl cursor-pointer ${getStatusColor()}`}>
-        <div className="flex items-center gap-2 mb-2">
-          {getStatusIcon()}
-          <div className="font-semibold text-sm text-gray-900 dark:text-white">{data.label}</div>
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-          <div className="flex items-center gap-1">
-            <Activity className="w-3 h-3" />
-            <span className="font-mono">{data.executionTimeMs || 0}ms</span>
+      <>
+        <Handle type="target" position={Position.Top} className="w-3 h-3 !bg-green-500" />
+        <div className={`px-4 py-3 rounded-lg border-2 shadow-lg min-w-[180px] transition-all hover:shadow-xl cursor-pointer ${getStatusColor()}`}>
+          <div className="flex items-center gap-2 mb-2">
+            {getStatusIcon()}
+            <div className="font-semibold text-sm text-gray-900 dark:text-white">{data.label}</div>
           </div>
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{data.nodeType}</div>
+          <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+            <div className="flex items-center gap-1">
+              <Activity className="w-3 h-3" />
+              <span className="font-mono">{data.executionTimeMs || 0}ms</span>
+            </div>
+            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{data.nodeType}</div>
+          </div>
         </div>
-      </div>
+        <Handle type="source" position={Position.Bottom} className="w-3 h-3 !bg-green-500" />
+      </>
     );
   };
 
