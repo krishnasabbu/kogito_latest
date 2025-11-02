@@ -6,6 +6,7 @@ import { FilterPanel } from './FilterPanel';
 import { JsonFilterPanel } from './JsonFilterPanel';
 import { MetricDetailCard } from './MetricDetailCard';
 import { AnalyticsCharts } from './AnalyticsCharts';
+import { ExecutionFlowVisualization } from './ExecutionFlowVisualization';
 import { NodeMetric } from '../../types/championChallenge';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -38,8 +39,8 @@ export const ComparisonDashboard: React.FC<ComparisonDashboardProps> = ({
 
   const [selectedMetric, setSelectedMetric] = useState<NodeMetric | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'flow' | 'summary' | 'analytics' | 'details'
-  >('flow');
+    'flow' | 'summary' | 'analytics' | 'details' | 'flowViz'
+  >('flowViz');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(true);
   const [showJsonFilters, setShowJsonFilters] = useState(false);
@@ -132,6 +133,17 @@ export const ComparisonDashboard: React.FC<ComparisonDashboardProps> = ({
 
           <div className="flex items-center gap-2 border-b">
             <button
+              onClick={() => setActiveTab('flowViz')}
+              className={`flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 ${
+                activeTab === 'flowViz'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Workflow className="w-4 h-4" />
+              Execution Flow
+            </button>
+            <button
               onClick={() => setActiveTab('flow')}
               className={`flex items-center gap-2 px-4 py-2 font-medium transition-colors border-b-2 ${
                 activeTab === 'flow'
@@ -140,7 +152,7 @@ export const ComparisonDashboard: React.FC<ComparisonDashboardProps> = ({
               }`}
             >
               <Workflow className="w-4 h-4" />
-              Flow Visualization
+              Comparison Flow
             </button>
             <button
               onClick={() => setActiveTab('summary')}
@@ -233,6 +245,15 @@ export const ComparisonDashboard: React.FC<ComparisonDashboardProps> = ({
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-auto">
+            {activeTab === 'flowViz' && (
+              <div className="h-full">
+                <ExecutionFlowVisualization
+                  execution={execution}
+                  variant="champion"
+                />
+              </div>
+            )}
+
             {activeTab === 'flow' && (
               <div className="h-full">
                 <ComparisonFlowCanvas
