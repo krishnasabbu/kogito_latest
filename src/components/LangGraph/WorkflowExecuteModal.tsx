@@ -71,91 +71,66 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
       const workflow = JSON.parse(workflowJSON);
       const inputs = JSON.parse(inputJson);
 
-      const nodes = workflow.graph?.nodes || [];
-      let executionResults: NodeExecution[] = [];
+      const backendUrl = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:8000';
+      const apiResponse = await axios.post(`${backendUrl}/execute`, {
+        graph: workflow.graph,
+        input: inputs,
+      });
 
-      for (const node of nodes) {
-        const startTime = Date.now();
+      const executionResult = apiResponse.data;
+      setResponse(JSON.stringify(executionResult, null, 2));
 
-        if (node.type === 'service' && node.data?.url) {
-          try {
-            const processedBody = replaceTemplateVariables(node.data.request || '{}', inputs);
-            let requestBody;
-            try {
-              requestBody = JSON.parse(processedBody);
-            } catch {
-              requestBody = processedBody;
+      if (executionResult.status === 'success' && executionResult.result) {
+        const nodes = workflow.graph?.nodes || [];
+        const resultData = executionResult.result;
+
+        const executionResults: NodeExecution[] = nodes.map((node: any) => {
+          const nodeId = node.id;
+          const nodeData = resultData[nodeId];
+
+          let requestData = null;
+          let responseData = null;
+          let status: 'success' | 'error' = 'success';
+          let errorMessage: string | undefined;
+
+          if (nodeData && typeof nodeData === 'object' && nodeData.request !== undefined) {
+            requestData = nodeData.request || null;
+            responseData = nodeData.response || null;
+
+            if (nodeData.error) {
+              status = 'error';
+              errorMessage = nodeData.error;
             }
-
-            const config: any = {
-              method: node.data.method || 'POST',
-              url: node.data.url,
+          } else if (node.type === 'decision') {
+            const decisionValue = resultData[nodeId.toUpperCase()] || resultData[nodeId];
+            responseData = {
+              decision: decisionValue,
+              script: node.data?.script || 'N/A'
             };
-
-            if (config.method !== 'GET') {
-              config.data = requestBody;
-            }
-
-            const result = await axios(config);
-            const endTime = Date.now();
-
-            executionResults.push({
-              nodeId: node.id,
-              label: node.data.label,
-              nodeType: node.type,
-              status: 'success',
-              executionTimeMs: endTime - startTime,
-              timestamp: new Date().toISOString(),
-              requestData: requestBody,
-              responseData: result.data,
-            });
-          } catch (error: any) {
-            const endTime = Date.now();
-            executionResults.push({
-              nodeId: node.id,
-              label: node.data.label,
-              nodeType: node.type,
-              status: 'error',
-              executionTimeMs: endTime - startTime,
-              timestamp: new Date().toISOString(),
-              requestData: node.data.request ? JSON.parse(node.data.request) : undefined,
-              errorMessage: error.response?.data?.message || error.message,
-              responseData: error.response?.data,
-            });
+            requestData = { type: 'decision', script: node.data?.script };
           }
-        } else {
-          const endTime = Date.now();
-          executionResults.push({
-            nodeId: node.id,
-            label: node.data.label,
-            nodeType: node.type,
-            status: 'success',
-            executionTimeMs: endTime - startTime,
+
+          return {
+            nodeId: nodeId,
+            label: node.data?.label || nodeId,
+            nodeType: node.type || 'unknown',
+            status: status,
+            executionTimeMs: nodeData?.executionTime || 0,
             timestamp: new Date().toISOString(),
-            requestData: inputs,
-            responseData: { message: 'Node processed' },
-          });
-        }
+            requestData: requestData,
+            responseData: responseData,
+            errorMessage: errorMessage,
+          };
+        });
+
+        setNodeExecutions(executionResults);
+        toast.success('Workflow execution completed');
+      } else {
+        toast.error(executionResult.error || 'Workflow execution failed');
       }
-
-      setNodeExecutions(executionResults);
-
-      const finalResult = {
-        status: 'completed',
-        nodeExecutions: executionResults,
-        summary: {
-          totalNodes: executionResults.length,
-          successCount: executionResults.filter(n => n.status === 'success').length,
-          errorCount: executionResults.filter(n => n.status === 'error').length,
-          totalTime: executionResults.reduce((sum, n) => sum + n.executionTimeMs, 0),
-        }
-      };
-
-      setResponse(JSON.stringify(finalResult, null, 2));
-      toast.success('Workflow execution completed');
     } catch (error: any) {
-      const errorMessage = error.message || 'Workflow execution failed';
-      setResponse(JSON.stringify({ error: errorMessage }, null, 2));
+      const errorMessage = error.response?.data?.error || error.message || 'Workflow execution failed';
+      setResponse(JSON.stringify({ error: errorMessage, details: error.response?.data }, null, 2));
       toast.error('Workflow execution failed');
     } finally {
       setIsLoading(false);
