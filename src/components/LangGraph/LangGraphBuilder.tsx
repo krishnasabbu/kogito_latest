@@ -14,6 +14,7 @@ import { Card } from '../ui/card';
 import { Plus, Download, Trash2, GitBranch, Code, Save, Upload, Play, Maximize2, Minimize2, ArrowLeft, Workflow } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { WorkflowExecuteModal } from './WorkflowExecuteModal';
+import { WorkflowExecutionWithForms } from './WorkflowExecutionWithForms';
 
 const nodeTypes = {
   serviceNode: ServiceNode,
@@ -40,6 +41,7 @@ export const LangGraphBuilder: React.FC = () => {
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [edgeCondition, setEdgeCondition] = useState('');
   const [showExecuteModal, setShowExecuteModal] = useState(false);
+  const [showExecuteWithFormsModal, setShowExecuteWithFormsModal] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
@@ -231,6 +233,16 @@ export const LangGraphBuilder: React.FC = () => {
       const parsedInput = JSON.parse(inputJSON);
       setInputs(parsedInput);
       setShowExecuteModal(true);
+    } catch (error) {
+      toast.error('Invalid input JSON format');
+    }
+  };
+
+  const handleExecuteWorkflowWithForms = () => {
+    try {
+      const parsedInput = JSON.parse(inputJSON);
+      setInputs(parsedInput);
+      setShowExecuteWithFormsModal(true);
     } catch (error) {
       toast.error('Invalid input JSON format');
     }
@@ -482,11 +494,19 @@ export const LangGraphBuilder: React.FC = () => {
               </>
             )}
             <Button
-              onClick={handleExecuteWorkflow}
-              className="w-full bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-semibold"
+              onClick={handleExecuteWorkflowWithForms}
+              className="w-full bg-gradient-to-r from-[#D71E28] to-[#BB1A21] hover:from-[#BB1A21] hover:to-[#A01519] text-white font-semibold"
             >
               <Play className="w-4 h-4 mr-2" />
-              Execute Workflow
+              Execute with Forms
+            </Button>
+            <Button
+              onClick={handleExecuteWorkflow}
+              variant="outline"
+              className="w-full"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Execute (Legacy)
             </Button>
             <Button
               onClick={handleTogglePreview}
@@ -640,6 +660,12 @@ export const LangGraphBuilder: React.FC = () => {
       <WorkflowExecuteModal
         isOpen={showExecuteModal}
         onClose={() => setShowExecuteModal(false)}
+        workflowJSON={exportJSON()}
+      />
+
+      <WorkflowExecutionWithForms
+        isOpen={showExecuteWithFormsModal}
+        onClose={() => setShowExecuteWithFormsModal(false)}
         workflowJSON={exportJSON()}
       />
     </div>
