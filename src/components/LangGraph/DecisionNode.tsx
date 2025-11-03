@@ -22,6 +22,8 @@ export const DecisionNode: React.FC<DecisionNodeProps> = ({ id, data }) => {
     updateNodeData(id, { label: newLabel });
   };
 
+  data['label'] = id;
+
   const handleSaveScript = (script: string) => {
     updateNodeData(id, { script });
   };
