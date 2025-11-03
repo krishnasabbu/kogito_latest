@@ -42,6 +42,8 @@ export const ServiceNode: React.FC<ServiceNodeProps> = ({ id, data }) => {
     updateNodeData(id, { label: newLabel });
   };
 
+  data['label'] = id;
+
   const getConfigSummary = () => {
     const config = data.config || defaultConfig;
     const parts: string[] = [];
