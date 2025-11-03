@@ -40,6 +40,8 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
     output: false,
     logs: false,
   });
+  const [flowNodes, setFlowNodes] = useState<Node[]>([]);
+  const [flowEdges, setFlowEdges] = useState<Edge[]>([]);
 
   if (!isOpen) return null;
 
@@ -59,6 +61,71 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
 
   const getNestedValue = (obj: any, path: string): any => {
     return path.split('.').reduce((current, key) => current?.[key], obj);
+  };
+
+  const calculateHorizontalLayout = (nodes: NodeExecution[], edges: any[]) => {
+    const positions: { [key: string]: { x: number; y: number } } = {};
+    const levels: { [key: string]: number } = {};
+    const nodesByLevel: { [level: number]: string[] } = {};
+
+    const incomingEdges: { [key: string]: number } = {};
+    nodes.forEach(n => {
+      incomingEdges[n.nodeId] = 0;
+    });
+
+    edges.forEach(edge => {
+      if (edge.target) {
+        incomingEdges[edge.target] = (incomingEdges[edge.target] || 0) + 1;
+      }
+    });
+
+    const queue = nodes.filter(n => incomingEdges[n.nodeId] === 0).map(n => n.nodeId);
+    let currentLevel = 0;
+
+    const visited = new Set<string>();
+    while (queue.length > 0) {
+      const levelSize = queue.length;
+      nodesByLevel[currentLevel] = [];
+
+      for (let i = 0; i < levelSize; i++) {
+        const nodeId = queue.shift()!;
+        if (visited.has(nodeId)) continue;
+        visited.add(nodeId);
+
+        levels[nodeId] = currentLevel;
+        nodesByLevel[currentLevel].push(nodeId);
+
+        edges.forEach(edge => {
+          if (edge.source === nodeId && edge.target && !visited.has(edge.target)) {
+            queue.push(edge.target);
+          }
+        });
+      }
+      currentLevel++;
+    }
+
+    nodes.forEach(n => {
+      if (!visited.has(n.nodeId)) {
+        levels[n.nodeId] = currentLevel;
+        if (!nodesByLevel[currentLevel]) nodesByLevel[currentLevel] = [];
+        nodesByLevel[currentLevel].push(n.nodeId);
+      }
+    });
+
+    Object.keys(nodesByLevel).forEach(levelKey => {
+      const level = parseInt(levelKey);
+      const nodesInLevel = nodesByLevel[level];
+      const xPosition = level * 350;
+
+      nodesInLevel.forEach((nodeId, index) => {
+        const totalNodes = nodesInLevel.length;
+        const ySpacing = 200;
+        const yOffset = (index - (totalNodes - 1) / 2) * ySpacing;
+        positions[nodeId] = { x: xPosition + 50, y: 300 + yOffset };
+      });
+    });
+
+    return positions;
   };
 
   const handleExecute = async () => {
@@ -120,6 +187,30 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
         });
 
         setNodeExecutions(executionResults);
+
+        const graphEdges = workflow.graph?.edges || [];
+        const positions = calculateHorizontalLayout(executionResults, graphEdges);
+
+        const newFlowNodes: Node[] = executionResults.map((exec) => ({
+          id: exec.nodeId,
+          type: 'default',
+          position: positions[exec.nodeId] || { x: 100, y: 100 },
+          data: exec,
+        }));
+
+        const newFlowEdges: Edge[] = graphEdges.map((edge: any, index: number) => ({
+          id: edge.id || `e-${edge.source}-${edge.target}-${index}`,
+          source: edge.source,
+          target: edge.target,
+          animated: true,
+          label: edge.condition || '',
+          style: { stroke: '#10b981', strokeWidth: 2 },
+          labelStyle: { fontSize: 10, fill: '#6b7280' },
+          labelBgStyle: { fill: '#ffffff', fillOpacity: 0.8 },
+        }));
+
+        setFlowNodes(newFlowNodes);
+        setFlowEdges(newFlowEdges);
         toast.success('Workflow execution completed');
       } else {
         toast.error(executionResult.error || 'Workflow execution failed');
@@ -167,7 +258,7 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
 
     return (
       <>
-        <Handle type="target" position={Position.Top} className="w-3 h-3 !bg-green-500" />
+        <Handle type="target" position={Position.Left} className="w-3 h-3 !bg-green-500" />
         <div className={`px-4 py-3 rounded-lg border-2 shadow-lg min-w-[180px] transition-all hover:shadow-xl cursor-pointer ${getStatusColor()}`}>
           <div className="flex items-center gap-2 mb-2">
             {getStatusIcon()}
@@ -181,7 +272,7 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{data.nodeType}</div>
           </div>
         </div>
-        <Handle type="source" position={Position.Bottom} className="w-3 h-3 !bg-green-500" />
+        <Handle type="source" position={Position.Right} className="w-3 h-3 !bg-green-500" />
       </>
     );
   };
@@ -195,20 +286,23 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
     workflow: FlowNode,
   };
 
-  const flowNodes: Node[] = nodeExecutions.map((exec, index) => ({
-    id: exec.nodeId,
-    type: 'default',
-    position: { x: 250, y: index * 120 + 50 },
-    data: exec,
-  }));
-
-  const flowEdges: Edge[] = nodeExecutions.slice(0, -1).map((exec, index) => ({
-    id: `e-${exec.nodeId}-${nodeExecutions[index + 1].nodeId}`,
-    source: exec.nodeId,
-    target: nodeExecutions[index + 1].nodeId,
-    animated: true,
-    style: { stroke: '#10b981', strokeWidth: 2 },
-  }));
+  const onNodesChange = (changes: any) => {
+    setFlowNodes((nds) => {
+      const updatedNodes = [...nds];
+      changes.forEach((change: any) => {
+        if (change.type === 'position' && change.dragging) {
+          const nodeIndex = updatedNodes.findIndex(n => n.id === change.id);
+          if (nodeIndex !== -1 && change.position) {
+            updatedNodes[nodeIndex] = {
+              ...updatedNodes[nodeIndex],
+              position: change.position,
+            };
+          }
+        }
+      });
+      return updatedNodes;
+    });
+  };
 
   const modalContent = (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-[9999]">
@@ -270,6 +364,7 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
                     nodes={flowNodes}
                     edges={flowEdges}
                     nodeTypes={nodeTypes}
+                    onNodesChange={onNodesChange}
                     onNodeClick={(event, node) => {
                       const exec = nodeExecutions.find(e => e.nodeId === node.id);
                       if (exec) setSelectedNode(exec);
