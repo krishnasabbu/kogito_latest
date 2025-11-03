@@ -102,12 +102,8 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
               errorMessage = nodeData.error;
             }
           } else if (node.type === 'decision') {
-            const decisionValue = resultData[nodeId.toUpperCase()] || resultData[nodeId];
-            responseData = {
-              decision: decisionValue,
-              script: node.data?.script || 'N/A'
-            };
-            requestData = { type: 'decision', script: node.data?.script };
+            requestData = { script: node.data?.script || '' };
+            responseData = null;
           }
 
           return {
@@ -278,8 +274,16 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
                       const exec = nodeExecutions.find(e => e.nodeId === node.id);
                       if (exec) setSelectedNode(exec);
                     }}
+                    nodesDraggable={true}
+                    nodesConnectable={false}
+                    elementsSelectable={true}
                     fitView
                     fitViewOptions={{ padding: 0.2 }}
+                    defaultEdgeOptions={{
+                      animated: true,
+                      style: { stroke: '#10b981', strokeWidth: 2 },
+                    }}
+                    className="bg-gray-50 dark:bg-gray-900"
                   >
                     <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
                     <Controls className="bg-white dark:bg-gray-800 shadow-lg" />
@@ -394,10 +398,19 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
                       </div>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div>{renderJsonData(selectedNode.requestData, 'Request Payload')}</div>
-                      <div>{renderJsonData(selectedNode.responseData, 'Response Payload')}</div>
-                    </div>
+                    {selectedNode.nodeType === 'decision' ? (
+                      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Decision Script</div>
+                        <pre className="text-xs text-gray-700 dark:text-gray-300 font-mono bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
+                          {selectedNode.requestData?.script || 'N/A'}
+                        </pre>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div>{renderJsonData(selectedNode.requestData, 'Request Payload')}</div>
+                        <div>{renderJsonData(selectedNode.responseData, 'Response Payload')}</div>
+                      </div>
+                    )}
 
                     <div className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex items-center gap-2">
