@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Loader2, Play, Activity, Code, CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -24,6 +24,49 @@ interface NodeExecution {
   responseData?: any;
   errorMessage?: string;
 }
+
+const FlowNode: React.FC<{ data: any }> = ({ data }) => {
+  const getStatusIcon = () => {
+    if (data.status === 'success') return <CheckCircle className="w-4 h-4 text-green-500" />;
+    if (data.status === 'error') return <XCircle className="w-4 h-4 text-red-500" />;
+    return <Clock className="w-4 h-4 text-gray-400" />;
+  };
+
+  const getStatusColor = () => {
+    if (data.status === 'success') return 'border-green-500 bg-green-50 dark:bg-green-900/20';
+    if (data.status === 'error') return 'border-red-500 bg-red-50 dark:bg-red-900/20';
+    return 'border-gray-300 bg-gray-50 dark:bg-gray-900/20';
+  };
+
+  return (
+    <>
+      <Handle type="target" position={Position.Left} className="w-3 h-3 !bg-green-500" />
+      <div className={`px-4 py-3 rounded-lg border-2 shadow-lg min-w-[180px] transition-all hover:shadow-xl cursor-pointer ${getStatusColor()}`}>
+        <div className="flex items-center gap-2 mb-2">
+          {getStatusIcon()}
+          <div className="font-semibold text-sm text-gray-900 dark:text-white">{data.label}</div>
+        </div>
+        <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+          <div className="flex items-center gap-1">
+            <Activity className="w-3 h-3" />
+            <span className="font-mono">{data.executionTimeMs || 0}ms</span>
+          </div>
+          <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{data.nodeType}</div>
+        </div>
+      </div>
+      <Handle type="source" position={Position.Right} className="w-3 h-3 !bg-green-500" />
+    </>
+  );
+};
+
+const nodeTypes = {
+  default: FlowNode,
+  service: FlowNode,
+  decision: FlowNode,
+  llm: FlowNode,
+  form: FlowNode,
+  workflow: FlowNode,
+};
 
 export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
   isOpen,
@@ -301,52 +344,14 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
     );
   };
 
-  const FlowNode: React.FC<{ data: any }> = ({ data }) => {
-    const getStatusIcon = () => {
-      if (data.status === 'success') return <CheckCircle className="w-4 h-4 text-green-500" />;
-      if (data.status === 'error') return <XCircle className="w-4 h-4 text-red-500" />;
-      return <Clock className="w-4 h-4 text-gray-400" />;
-    };
-
-    const getStatusColor = () => {
-      if (data.status === 'success') return 'border-green-500 bg-green-50 dark:bg-green-900/20';
-      if (data.status === 'error') return 'border-red-500 bg-red-50 dark:bg-red-900/20';
-      return 'border-gray-300 bg-gray-50 dark:bg-gray-900/20';
-    };
-
-    return (
-      <>
-        <Handle type="target" position={Position.Left} className="w-3 h-3 !bg-green-500" />
-        <div className={`px-4 py-3 rounded-lg border-2 shadow-lg min-w-[180px] transition-all hover:shadow-xl cursor-pointer ${getStatusColor()}`}>
-          <div className="flex items-center gap-2 mb-2">
-            {getStatusIcon()}
-            <div className="font-semibold text-sm text-gray-900 dark:text-white">{data.label}</div>
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-            <div className="flex items-center gap-1">
-              <Activity className="w-3 h-3" />
-              <span className="font-mono">{data.executionTimeMs || 0}ms</span>
-            </div>
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400">{data.nodeType}</div>
-          </div>
-        </div>
-        <Handle type="source" position={Position.Right} className="w-3 h-3 !bg-green-500" />
-      </>
-    );
-  };
-
-  const nodeTypes = {
-    default: FlowNode,
-    service: FlowNode,
-    decision: FlowNode,
-    llm: FlowNode,
-    form: FlowNode,
-    workflow: FlowNode,
-  };
-
-  const onNodesChange = (changes: any) => {
+  const onNodesChange = useCallback((changes: any) => {
     setFlowNodes((nds) => applyNodeChanges(changes, nds));
-  };
+  }, []);
+
+  const onNodeClick = useCallback((event: any, node: Node) => {
+    const exec = nodeExecutions.find(e => e.nodeId === node.id);
+    if (exec) setSelectedNode(exec);
+  }, [nodeExecutions]);
 
   const modalContent = (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-[9999]">
@@ -409,10 +414,7 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
                     edges={flowEdges}
                     nodeTypes={nodeTypes}
                     onNodesChange={onNodesChange}
-                    onNodeClick={(event, node) => {
-                      const exec = nodeExecutions.find(e => e.nodeId === node.id);
-                      if (exec) setSelectedNode(exec);
-                    }}
+                    onNodeClick={onNodeClick}
                     nodesDraggable={true}
                     nodesConnectable={false}
                     elementsSelectable={true}
