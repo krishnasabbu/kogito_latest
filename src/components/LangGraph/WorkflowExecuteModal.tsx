@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Loader2, Play, Activity, Code, CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import ReactFlow, { Node, Edge, Background, Controls, MiniMap, BackgroundVariant, Handle, Position } from 'react-flow-renderer';
+import ReactFlow, { Node, Edge, Background, Controls, MiniMap, BackgroundVariant, Handle, Position, applyNodeChanges } from 'react-flow-renderer';
 
 interface WorkflowExecuteModalProps {
   isOpen: boolean;
@@ -42,6 +42,54 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
   });
   const [flowNodes, setFlowNodes] = useState<Node[]>([]);
   const [flowEdges, setFlowEdges] = useState<Edge[]>([]);
+
+  useEffect(() => {
+    if (isOpen && workflowJSON) {
+      try {
+        const workflow = JSON.parse(workflowJSON);
+        const nodes = workflow.graph?.nodes || [];
+        const edges = workflow.graph?.edges || [];
+
+        const initialExecutions: NodeExecution[] = nodes.map((node: any) => ({
+          nodeId: node.id,
+          label: node.data?.label || node.id,
+          nodeType: node.type || 'unknown',
+          status: 'pending' as const,
+          executionTimeMs: 0,
+          timestamp: new Date().toISOString(),
+          requestData: null,
+          responseData: null,
+        }));
+
+        setNodeExecutions(initialExecutions);
+
+        const positions = calculateHorizontalLayout(initialExecutions, edges);
+
+        const initialNodes: Node[] = initialExecutions.map((exec) => ({
+          id: exec.nodeId,
+          type: 'default',
+          position: positions[exec.nodeId] || { x: 100, y: 100 },
+          data: exec,
+        }));
+
+        const initialEdges: Edge[] = edges.map((edge: any, index: number) => ({
+          id: edge.id || `e-${edge.source}-${edge.target}-${index}`,
+          source: edge.source,
+          target: edge.target,
+          animated: true,
+          label: edge.condition || '',
+          style: { stroke: '#9ca3af', strokeWidth: 2 },
+          labelStyle: { fontSize: 10, fill: '#6b7280' },
+          labelBgStyle: { fill: '#ffffff', fillOpacity: 0.8 },
+        }));
+
+        setFlowNodes(initialNodes);
+        setFlowEdges(initialEdges);
+      } catch (error) {
+        console.error('Failed to parse workflow JSON:', error);
+      }
+    }
+  }, [isOpen, workflowJSON]);
 
   if (!isOpen) return null;
 
@@ -157,10 +205,13 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
 
           let requestData = null;
           let responseData = null;
-          let status: 'success' | 'error' = 'success';
+          let status: 'success' | 'error' | 'pending' = 'pending';
           let errorMessage: string | undefined;
+          let wasExecuted = false;
 
           if (nodeData && typeof nodeData === 'object' && nodeData.request !== undefined) {
+            wasExecuted = true;
+            status = 'success';
             requestData = nodeData.request || null;
             responseData = nodeData.response || null;
 
@@ -169,6 +220,11 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
               errorMessage = nodeData.error;
             }
           } else if (node.type === 'decision') {
+            const decisionResult = resultData[nodeId.toUpperCase()] || resultData[nodeId];
+            if (decisionResult !== undefined) {
+              wasExecuted = true;
+              status = 'success';
+            }
             requestData = { script: node.data?.script || '' };
             responseData = null;
           }
@@ -189,14 +245,16 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
         setNodeExecutions(executionResults);
 
         const graphEdges = workflow.graph?.edges || [];
-        const positions = calculateHorizontalLayout(executionResults, graphEdges);
 
-        const newFlowNodes: Node[] = executionResults.map((exec) => ({
-          id: exec.nodeId,
-          type: 'default',
-          position: positions[exec.nodeId] || { x: 100, y: 100 },
-          data: exec,
-        }));
+        const newFlowNodes: Node[] = executionResults.map((exec) => {
+          const existingNode = flowNodes.find(n => n.id === exec.nodeId);
+          return {
+            id: exec.nodeId,
+            type: 'default',
+            position: existingNode?.position || { x: 100, y: 100 },
+            data: exec,
+          };
+        });
 
         const newFlowEdges: Edge[] = graphEdges.map((edge: any, index: number) => ({
           id: edge.id || `e-${edge.source}-${edge.target}-${index}`,
@@ -287,21 +345,7 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
   };
 
   const onNodesChange = (changes: any) => {
-    setFlowNodes((nds) => {
-      const updatedNodes = [...nds];
-      changes.forEach((change: any) => {
-        if (change.type === 'position' && change.dragging) {
-          const nodeIndex = updatedNodes.findIndex(n => n.id === change.id);
-          if (nodeIndex !== -1 && change.position) {
-            updatedNodes[nodeIndex] = {
-              ...updatedNodes[nodeIndex],
-              position: change.position,
-            };
-          }
-        }
-      });
-      return updatedNodes;
-    });
+    setFlowNodes((nds) => applyNodeChanges(changes, nds));
   };
 
   const modalContent = (
@@ -359,7 +403,7 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
                 </div>
               </div>
               <div className="flex-1">
-                {nodeExecutions.length > 0 ? (
+                {flowNodes.length > 0 ? (
                   <ReactFlow
                     nodes={flowNodes}
                     edges={flowEdges}
