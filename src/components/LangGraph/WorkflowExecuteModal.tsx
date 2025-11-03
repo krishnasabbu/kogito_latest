@@ -86,75 +86,16 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
   const [flowNodes, setFlowNodes] = useState<Node[]>([]);
   const [flowEdges, setFlowEdges] = useState<Edge[]>([]);
 
-  useEffect(() => {
-    if (isOpen && workflowJSON) {
-      try {
-        const workflow = JSON.parse(workflowJSON);
-        const nodes = workflow.graph?.nodes || [];
-        const edges = workflow.graph?.edges || [];
+  const onNodesChange = useCallback((changes: any) => {
+    setFlowNodes((nds) => applyNodeChanges(changes, nds));
+  }, []);
 
-        const initialExecutions: NodeExecution[] = nodes.map((node: any) => ({
-          nodeId: node.id,
-          label: node.data?.label || node.id,
-          nodeType: node.type || 'unknown',
-          status: 'pending' as const,
-          executionTimeMs: 0,
-          timestamp: new Date().toISOString(),
-          requestData: null,
-          responseData: null,
-        }));
+  const onNodeClick = useCallback((event: any, node: Node) => {
+    const exec = nodeExecutions.find(e => e.nodeId === node.id);
+    if (exec) setSelectedNode(exec);
+  }, [nodeExecutions]);
 
-        setNodeExecutions(initialExecutions);
-
-        const positions = calculateHorizontalLayout(initialExecutions, edges);
-
-        const initialNodes: Node[] = initialExecutions.map((exec) => ({
-          id: exec.nodeId,
-          type: 'default',
-          position: positions[exec.nodeId] || { x: 100, y: 100 },
-          data: exec,
-        }));
-
-        const initialEdges: Edge[] = edges.map((edge: any, index: number) => ({
-          id: edge.id || `e-${edge.source}-${edge.target}-${index}`,
-          source: edge.source,
-          target: edge.target,
-          animated: true,
-          label: edge.condition || '',
-          style: { stroke: '#9ca3af', strokeWidth: 2 },
-          labelStyle: { fontSize: 10, fill: '#6b7280' },
-          labelBgStyle: { fill: '#ffffff', fillOpacity: 0.8 },
-        }));
-
-        setFlowNodes(initialNodes);
-        setFlowEdges(initialEdges);
-      } catch (error) {
-        console.error('Failed to parse workflow JSON:', error);
-      }
-    }
-  }, [isOpen, workflowJSON]);
-
-  if (!isOpen) return null;
-
-  const replaceTemplateVariables = (template: string, inputs: any): string => {
-    let result = template;
-    const regex = /\{\{([^}]+)\}\}/g;
-    const matches = template.matchAll(regex);
-
-    for (const match of matches) {
-      const path = match[1];
-      const value = getNestedValue(inputs, path);
-      result = result.replace(match[0], JSON.stringify(value));
-    }
-
-    return result;
-  };
-
-  const getNestedValue = (obj: any, path: string): any => {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
-  };
-
-  const calculateHorizontalLayout = (nodes: NodeExecution[], edges: any[]) => {
+  const calculateHorizontalLayout = useCallback((nodes: NodeExecution[], edges: any[]) => {
     const positions: { [key: string]: { x: number; y: number } } = {};
     const levels: { [key: string]: number } = {};
     const nodesByLevel: { [level: number]: string[] } = {};
@@ -217,6 +158,74 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
     });
 
     return positions;
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && workflowJSON) {
+      try {
+        const workflow = JSON.parse(workflowJSON);
+        const nodes = workflow.graph?.nodes || [];
+        const edges = workflow.graph?.edges || [];
+
+        const initialExecutions: NodeExecution[] = nodes.map((node: any) => ({
+          nodeId: node.id,
+          label: node.data?.label || node.id,
+          nodeType: node.type || 'unknown',
+          status: 'pending' as const,
+          executionTimeMs: 0,
+          timestamp: new Date().toISOString(),
+          requestData: null,
+          responseData: null,
+        }));
+
+        setNodeExecutions(initialExecutions);
+
+        const positions = calculateHorizontalLayout(initialExecutions, edges);
+
+        const initialNodes: Node[] = initialExecutions.map((exec) => ({
+          id: exec.nodeId,
+          type: 'default',
+          position: positions[exec.nodeId] || { x: 100, y: 100 },
+          data: exec,
+        }));
+
+        const initialEdges: Edge[] = edges.map((edge: any, index: number) => ({
+          id: edge.id || `e-${edge.source}-${edge.target}-${index}`,
+          source: edge.source,
+          target: edge.target,
+          animated: true,
+          label: edge.condition || '',
+          style: { stroke: '#9ca3af', strokeWidth: 2 },
+          labelStyle: { fontSize: 10, fill: '#6b7280' },
+          labelBgStyle: { fill: '#ffffff', fillOpacity: 0.8 },
+        }));
+
+        setFlowNodes(initialNodes);
+        setFlowEdges(initialEdges);
+      } catch (error) {
+        console.error('Failed to parse workflow JSON:', error);
+      }
+    }
+  }, [isOpen, workflowJSON, calculateHorizontalLayout]);
+
+  if (!isOpen) return null;
+
+  const replaceTemplateVariables = (template: string, inputs: any): string => {
+    let result = template;
+    const regex = /\{\{([^}]+)\}\}/g;
+    const matches = template.matchAll(regex);
+
+    for (const match of matches) {
+      const path = match[1];
+      const value = getNestedValue(inputs, path);
+      result = result.replace(match[0], JSON.stringify(value));
+    }
+
+    return result;
+  };
+
+  const getNestedValue = (obj: any, path: string): any => {
+    return path.split('.').reduce((current, key) => current?.[key], obj);
   };
 
   const handleExecute = async () => {
@@ -343,15 +352,6 @@ export const WorkflowExecuteModal: React.FC<WorkflowExecuteModalProps> = ({
       </div>
     );
   };
-
-  const onNodesChange = useCallback((changes: any) => {
-    setFlowNodes((nds) => applyNodeChanges(changes, nds));
-  }, []);
-
-  const onNodeClick = useCallback((event: any, node: Node) => {
-    const exec = nodeExecutions.find(e => e.nodeId === node.id);
-    if (exec) setSelectedNode(exec);
-  }, [nodeExecutions]);
 
   const modalContent = (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-[9999]">
